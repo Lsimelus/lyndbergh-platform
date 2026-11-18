@@ -412,7 +412,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Future iterations:** Deploy it on its own VPS with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents
+**Future iterations:** Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents
 
 ## Story bank
 
@@ -444,7 +444,7 @@ What I'm working on now, what's next, and where each project goes from here.
 
 - [ ] Decide where the ABChealth landing site lives (Vercel Hobby forbids commercial use): Vercel Pro, its own AWS account, or Cloudflare Pages
 - [ ] Fix the CI Terraform plan: let the plan role write only the .tflock file, and set pipefail so a failed plan fails the step
-- [ ] Deploy lyndbergh-platform with Kamal to its own small VPS (not real-calc's host), with daily SQLite backups
+- [ ] Deploy lyndbergh-platform on a host separate from real-calc's AWS account, with daily SQLite backups. Waiting on the host decision: Render (recommended, ~$8/month, deploys on push), Fly.io (~$2-5), Kamal on a ~€4 VPS, or AWS Lightsail in its own account once the Organizations quota is raised and the ECS block is lifted. Not Vercel (no long-running jobs or disk for Rails + SQLite).
 - [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
 - [ ] Add feedback buttons (rate the experience and/or comment) to Real Calc and ABChealth, posting to lyndbergh-platform's /api/feedback
 - [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
@@ -481,7 +481,7 @@ What I'm working on now, what's next, and where each project goes from here.
 | [real-calc-client](#real-calc-client) | Superseded by gems/real_calc_web in real-calc |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
 | [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired |
-| [lyndbergh-platform](#lyndbergh-platform) | Deploy it on its own VPS with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents |
+| [lyndbergh-platform](#lyndbergh-platform) | Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents |
 
 ## Archive
 
@@ -562,7 +562,7 @@ Each repo has its own port so they can all run at once.
 
 ### TODO
 
-- [ ] Deploy it with Kamal to its own small VPS (not real-calc's host), with daily SQLite backups, and add it to the Portfolio.
+- [ ] Deploy it on a host separate from real-calc's AWS account, with daily SQLite backups, and add it to the Portfolio. Host not chosen yet: Render (recommended), Fly.io, Kamal on a VPS, or AWS Lightsail in its own account. Not Vercel: it can't run the recurring checks or keep the SQLite database.
 - [ ] Alert when a site goes from up to down (email or a webhook).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
 - [ ] Copy the old messages from fastapi-postgres, point the Portfolio's `REACT_APP_API_URL` here, and retire the FastAPI backend.

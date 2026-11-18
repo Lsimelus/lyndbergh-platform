@@ -42,7 +42,6 @@ flowchart LR
     ui["Rails UI"] --> conv["FastAPI converter"] --> ytm["YouTube Music"]
   end
   pf["Portfolio<br/>lyndbergh.net"] -->|contact form| fp
-  mon["lyndbergh-platform<br/>site monitor"] -.->|checks every 5 min| pf & rc & web & fp
 ```
 
 ## Featured

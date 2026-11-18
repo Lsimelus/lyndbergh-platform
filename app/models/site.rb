@@ -1,8 +1,8 @@
 # A monitored site, read from config/sites.yml.
-Site = Data.define(:slug, :name, :url, :health_path, :repo, :contract) do
+Site = Data.define(:slug, :name, :url, :health_path, :repo, :expect) do
   def self.all
     @all ||= YAML.load_file(Rails.root.join("config/sites.yml")).map do |attrs|
-      new(health_path: nil, contract: nil, **attrs.symbolize_keys)
+      new(health_path: nil, expect: nil, **attrs.symbolize_keys)
     end
   end
 

@@ -1,3 +1,5 @@
+require "net/http"
+
 # One health check of a site: up or down, and why.
 class Check < ApplicationRecord
   TIMEOUT = 10
@@ -13,9 +15,7 @@ class Check < ApplicationRecord
     status = response.code.to_i
     problems = []
     problems << "HTTP #{status}" unless status.between?(200, 399)
-    if site.contract
-      problems += Contract.find(site.contract).errors_for(site.health_path, status, response.body).map { |e| "contract: #{e}" }
-    end
+    problems << "expected JSON" if site.expect == "json" && !json?(response.body)
 
     create!(site_slug: site.slug, ok: problems.empty?, http_status: status, latency_ms: latency_ms, error: problems.join("; ").presence)
   rescue StandardError => e
@@ -26,6 +26,13 @@ class Check < ApplicationRecord
     Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: TIMEOUT, read_timeout: TIMEOUT) do |http|
       http.get(uri.request_uri, "User-Agent" => "lyndbergh-platform-monitor")
     end
+  end
+
+  def self.json?(body)
+    JSON.parse(body.to_s)
+    true
+  rescue JSON::ParserError
+    false
   end
 
   def self.prune(older_than: 30.days.ago) = where(created_at: ...older_than).delete_all

@@ -3,7 +3,7 @@
 <main class="page">
   <header>
     <h1>Site status</h1>
-    <p class="muted">Every site is checked every 5 minutes. Sites with an API contract also have their health response validated against it.</p>
+    <p class="muted">Every site is checked every 5 minutes. APIs must also answer in JSON.</p>
   </header>
 
   <% @sites.each do |entry| %>
@@ -14,7 +14,6 @@
           <%= latest.nil? ? "No checks yet" : (latest.ok? ? "Up" : "Down") %>
         </span>
         <h2><%= site.name %></h2>
-        <% if site.contract %><span class="tag">contract: <%= site.contract %></span><% end %>
       </div>
 
       <dl class="facts">

@@ -1,6 +1,6 @@
-# Every site the platform monitors. `contract` names a service spec pulled into
-# contracts/vendor/<contract>/ (bin/rails contracts:pull); when set, the health
-# response is also validated against that spec.
+# Every site the platform monitors. `health_path` defaults to /.
+# `expect: json` marks the check down unless the response is JSON (catches a host
+# serving its HTML page where the API should be).
 - slug: portfolio
   name: Portfolio
   url: https://www.lyndbergh.net
@@ -11,14 +11,14 @@
   url: https://realcalc.lyndbergh.net
   health_path: /health
   repo: Lsimelus/real-calc
-  contract: real-calc
+  expect: json
 
 - slug: abchealth
   name: ABCHealth
   url: https://abchealth-expressjs.vercel.app
   health_path: /api/health
   repo: Lsimelus/abchealth-expressjs
-  contract: abchealth
+  expect: json
 
 - slug: fastapi-postgres
   name: FastAPI backend (legacy)

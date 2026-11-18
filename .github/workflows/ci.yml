@@ -79,22 +79,3 @@ jobs:
 
       - name: Run tests
         run: bin/rails db:test:prepare test
-
-  contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - name: Lint, bundle and generate types
-        run: npm run contracts
-
-      - name: Generated files are up to date
-        run: git diff --exit-code -- contracts/dist clients/ts

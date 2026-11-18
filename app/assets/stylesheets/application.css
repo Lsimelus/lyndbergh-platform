@@ -49,7 +49,6 @@ h2 { margin: 0; font-size: 1.15rem; }
 .badge.up { background: var(--up); }
 .badge.down { background: var(--down); }
 .badge.unknown { background: var(--unknown); }
-.tag { font-size: 0.8rem; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; }
 
 .facts { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0 0; }
 .facts dt { font-size: 0.8rem; color: var(--muted); }

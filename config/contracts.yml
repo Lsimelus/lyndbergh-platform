@@ -1,0 +1,12 @@
+# Service specs live in each service's repo, next to its code. `bin/rails contracts:pull`
+# copies them into contracts/vendor/<name>/openapi.yaml at `ref`, then `npm run contracts`
+# bundles them and generates TypeScript types. Bump `ref` to pick up a change.
+real-calc:
+  repo: Lsimelus/real-calc
+  path: openapi.yaml
+  ref: main
+
+abchealth:
+  repo: Lsimelus/abchealth-expressjs
+  path: openapi.yaml
+  ref: main

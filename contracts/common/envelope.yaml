@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: Shared components
+  version: 1.0.0
+  description: |
+    Pieces every Lyndbergh API reuses. Reference them from a service contract with
+    `$ref: ../common/envelope.yaml#/components/...`.
+
+    Every JSON response is an envelope: `{ "data": ..., "meta": ..., "error": ... }`.
+    On success `error` is null; on failure `data` and `meta` are null. Clients need one
+    parser (`unwrap` in @lyndbergh/contracts) instead of one per endpoint.
+
+    There is no generic type in OpenAPI, so each endpoint declares its own success
+    envelope (`<Thing>Response`) with the same three keys, `meta` pointing at `Meta`
+    and `error` set to `type: "null"`.
+paths: {}
+components:
+  schemas:
+    Meta:
+      description: Counts and paging when the endpoint has them, otherwise null.
+      type: [object, "null"]
+      additionalProperties: true
+      properties:
+        count:
+          type: integer
+          description: Items in this response
+        total:
+          type: integer
+          description: Items across all pages
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    ErrorBody:
+      type: object
+      required: [message, code]
+      properties:
+        message:
+          type: string
+          description: What went wrong, in words for people
+        code:
+          type: string
+          description: |
+            A stable code to branch on. Conventions: `validation_error` (422),
+            `http_<status>` for plain HTTP errors, `internal_error` (500), or a
+            domain code such as `too_many_states`.
+          examples: [validation_error, http_404, internal_error]
+        details:
+          type: object
+          additionalProperties: true
+          description: Extra detail when there is any, e.g. the failed validations
+
+    ErrorEnvelope:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data:
+          type: "null"
+        meta:
+          type: "null"
+        error:
+          $ref: "#/components/schemas/ErrorBody"
+      example:
+        data: null
+        meta: null
+        error:
+          message: Not found
+          code: http_404
+
+    ValidationIssue:
+      description: One failed check, FastAPI-style (`loc` is the path to the bad input).
+      type: object
+      required: [loc, msg, type]
+      properties:
+        loc:
+          type: array
+          items:
+            type: [string, integer]
+          examples: [[request, email]]
+        msg:
+          type: string
+        type:
+          type: string
+
+    ValidationErrorEnvelope:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data:
+          type: "null"
+        meta:
+          type: "null"
+        error:
+          type: object
+          required: [message, code, details]
+          properties:
+            message:
+              type: string
+            code:
+              const: validation_error
+            details:
+              type: object
+              required: [errors]
+              properties:
+                errors:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ValidationIssue"
+      example:
+        data: null
+        meta: null
+        error:
+          message: Request validation failed
+          code: validation_error
+          details:
+            errors:
+              - loc: [request, email]
+                msg: is empty
+                type: allow_blank_validator
+
+  responses:
+    NotFound:
+      description: Nothing matches the request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Unauthorized:
+      description: Not signed in
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Forbidden:
+      description: Signed in, but not allowed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    ValidationError:
+      description: The request failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorEnvelope"
+    TooManyRequests:
+      description: Rate limited; retry after the Retry-After header
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    InternalError:
+      description: Unexpected failure; the server has logged it
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"

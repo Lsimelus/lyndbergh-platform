@@ -1,0 +1,39 @@
+<% content_for :title, "Site status" %>
+
+<main class="page">
+  <header>
+    <h1>Site status</h1>
+    <p class="muted">Every site is checked every 5 minutes. Sites with an API contract also have their health response validated against it.</p>
+  </header>
+
+  <% @sites.each do |entry| %>
+    <% site, latest = entry[:site], entry[:latest] %>
+    <section class="site">
+      <div class="site-head">
+        <span class="badge <%= latest.nil? ? "unknown" : (latest.ok? ? "up" : "down") %>">
+          <%= latest.nil? ? "No checks yet" : (latest.ok? ? "Up" : "Down") %>
+        </span>
+        <h2><%= site.name %></h2>
+        <% if site.contract %><span class="tag">contract: <%= site.contract %></span><% end %>
+      </div>
+
+      <dl class="facts">
+        <div><dt>Uptime (24h)</dt><dd><%= entry[:uptime] ? "#{entry[:uptime]}%" : "—" %></dd></div>
+        <div><dt>Latency</dt><dd><%= latest&.latency_ms ? "#{latest.latency_ms} ms" : "—" %></dd></div>
+        <div><dt>Last check</dt><dd><%= latest ? "#{time_ago_in_words(latest.created_at)} ago" : "—" %></dd></div>
+      </dl>
+
+      <% if latest&.error %><p class="error"><%= latest.error %></p><% end %>
+
+      <div class="history" aria-label="Last <%= entry[:history].size %> checks, oldest first">
+        <% entry[:history].each do |check| %>
+          <span class="tick <%= check.ok? ? "up" : "down" %>" title="<%= check.created_at.utc.strftime("%b %-d %H:%M UTC") %><%= " — #{check.error}" if check.error %>"></span>
+        <% end %>
+      </div>
+
+      <nav class="links">
+        <% site.links.each do |label, href| %><%= link_to label, href, rel: "noopener" %><% end %>
+      </nav>
+    </section>
+  <% end %>
+</main>

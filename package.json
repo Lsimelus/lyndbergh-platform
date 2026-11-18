@@ -1,0 +1,22 @@
+{
+  "name": "@lyndbergh/contracts",
+  "version": "0.1.0",
+  "description": "Shared API contracts and generated TypeScript types for Lyndbergh services",
+  "license": "MIT",
+  "types": "clients/ts/index.d.ts",
+  "files": [
+    "clients/ts",
+    "contracts/dist",
+    "contracts/common"
+  ],
+  "scripts": {
+    "contracts": "npm run contracts:lint && npm run contracts:bundle && npm run contracts:types",
+    "contracts:lint": "redocly lint",
+    "contracts:bundle": "redocly bundle real-calc -o contracts/dist/real-calc.json && redocly bundle abchealth -o contracts/dist/abchealth.json",
+    "contracts:types": "openapi-typescript"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.80.0",
+    "openapi-typescript": "^7.13.0"
+  }
+}

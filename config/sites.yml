@@ -1,0 +1,27 @@
+# Every site the platform monitors. `contract` names a service spec pulled into
+# contracts/vendor/<contract>/ (bin/rails contracts:pull); when set, the health
+# response is also validated against that spec.
+- slug: portfolio
+  name: Portfolio
+  url: https://www.lyndbergh.net
+  repo: Lsimelus/Portfolio
+
+- slug: real-calc
+  name: Real Calc
+  url: https://realcalc.lyndbergh.net
+  health_path: /health
+  repo: Lsimelus/real-calc
+  contract: real-calc
+
+- slug: abchealth
+  name: ABCHealth
+  url: https://abchealth-expressjs.vercel.app
+  health_path: /api/health
+  repo: Lsimelus/abchealth-expressjs
+  contract: abchealth
+
+- slug: fastapi-postgres
+  name: FastAPI backend (legacy)
+  url: https://fastapi-postgres-gamma.vercel.app
+  health_path: /health
+  repo: Lsimelus/fastapi-postgres

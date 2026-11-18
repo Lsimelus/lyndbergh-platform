@@ -1,0 +1,424 @@
+openapi: 3.1.0
+info:
+  title: Real Calc API
+  version: 1.0.0
+  description: |
+    The part of the Real Calc API that other repos call: the Portfolio contact form
+    and the real-calc-client location/mortgage screens.
+
+    Served by `real-calc` (Rails + Grape). Endpoints used only by real-calc's own
+    frontend stay documented by its `/openapi.json` and are not part of this contract.
+    Change this file first, then the server and clients (see AGENTS.md).
+servers:
+  - url: https://realcalc.lyndbergh.net
+    description: Production
+  - url: http://localhost:3000
+    description: Local
+tags:
+  - name: health
+  - name: contact
+  - name: places
+  - name: search
+  - name: market
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      tags: [health]
+      summary: Liveness and database check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: Database unreachable
+          content:
+            application/json:
+              schema:
+                $ref: ../../common/envelope.yaml#/components/schemas/ErrorEnvelope
+
+  /api/contact-form:
+    post:
+      operationId: submitContactForm
+      tags: [contact]
+      summary: Send a contact message
+      description: Public. The Portfolio site's contact form posts here.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactFormRequest"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactSubmissionResponse"
+        "422":
+          $ref: ../../common/envelope.yaml#/components/responses/ValidationError
+        "429":
+          $ref: ../../common/envelope.yaml#/components/responses/TooManyRequests
+
+  /api/mortgage-rate:
+    get:
+      operationId: getMortgageRate
+      tags: [market]
+      summary: Current US average 30-year fixed rate
+      responses:
+        "200":
+          description: Current mortgage rate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MortgageRateResponse"
+        "404":
+          $ref: ../../common/envelope.yaml#/components/responses/NotFound
+
+  /api/cities/{state}:
+    get:
+      operationId: listCities
+      tags: [places]
+      summary: City slugs in a state
+      parameters:
+        - $ref: "#/components/parameters/State"
+      responses:
+        "200":
+          description: Cities in the state (empty for an unknown state)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CitiesResponse"
+
+  /api/items/{state}/{city}:
+    get:
+      operationId: getPlace
+      tags: [places]
+      summary: One place's details
+      parameters:
+        - $ref: "#/components/parameters/State"
+        - name: city
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [round-rock]
+      responses:
+        "200":
+          description: The place
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceDetailResponse"
+        "404":
+          $ref: ../../common/envelope.yaml#/components/responses/NotFound
+
+  /api/rank-locations:
+    get:
+      operationId: rankLocations
+      tags: [search]
+      summary: Rank places for a budget
+      description: Places within (or, with `budget_stretch`, a little over) `max_price`, best match first.
+      parameters:
+        - name: max_price
+          in: query
+          required: true
+          schema:
+            type: number
+            exclusiveMinimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+        - name: budget_stretch
+          in: query
+          description: Fraction over budget a reach pick may be, e.g. 0.1
+          schema:
+            type: number
+            default: 0
+        - name: guarantee_reach_pick
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: include_state
+          in: query
+          description: With include_city, always include this place
+          schema:
+            type: string
+        - name: include_city
+          in: query
+          schema:
+            type: string
+        - name: states
+          in: query
+          description: Up to 3 state slugs, repeated (`?states=texas&states=ohio`)
+          style: form
+          explode: true
+          schema:
+            type: array
+            maxItems: 3
+            items:
+              type: string
+        - { name: weight_affordability, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_growth, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_rental_yield, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_tax_burden, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_hoa_burden, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_market_competitiveness, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_inventory, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_speed_to_close, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_safety, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+        - { name: weight_disaster_risk, in: query, schema: { $ref: "#/components/schemas/Weight" } }
+      responses:
+        "200":
+          description: Ranked places
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RankLocationsResponse"
+        "422":
+          description: Invalid input, or a domain error such as `too_many_states`
+          content:
+            application/json:
+              schema:
+                $ref: ../../common/envelope.yaml#/components/schemas/ErrorEnvelope
+
+components:
+  parameters:
+    State:
+      name: state
+      in: path
+      required: true
+      description: State slug
+      schema:
+        type: string
+        examples: [texas]
+
+  schemas:
+    Weight:
+      type: number
+      minimum: 0
+      description: How much a factor counts; weights are normalized server-side
+
+    NullableNumber:
+      type: [number, "null"]
+
+    Health:
+      type: object
+      required: [status, database, timestamp]
+      properties:
+        status:
+          const: healthy
+        database:
+          type: string
+        timestamp:
+          type: string
+          description: UTC, ISO 8601 without zone suffix
+    HealthResponse:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data: { $ref: "#/components/schemas/Health" }
+        meta: { $ref: ../../common/envelope.yaml#/components/schemas/Meta }
+        error: { type: "null" }
+
+    ContactFormRequest:
+      type: object
+      required: [name, email, subject, message]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          minLength: 1
+          maxLength: 255
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 500
+        message:
+          type: string
+          minLength: 1
+      example:
+        name: Ada Lovelace
+        email: ada@example.com
+        subject: Engineering role
+        message: Hi! Are you open to a chat next week?
+    ContactSubmission:
+      type: object
+      required: [id, name, email, subject, message]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        subject: { type: string }
+        message: { type: string }
+    ContactSubmissionResponse:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data: { $ref: "#/components/schemas/ContactSubmission" }
+        meta: { $ref: ../../common/envelope.yaml#/components/schemas/Meta }
+        error: { type: "null" }
+
+    MortgageRate:
+      type: object
+      required: [rate, date, source]
+      properties:
+        rate:
+          type: number
+          description: US average 30-year fixed rate, percent
+          examples: [6.24]
+        date:
+          type: string
+          format: date
+          description: The week, as an ISO date
+        source:
+          type: string
+    MortgageRateResponse:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data: { $ref: "#/components/schemas/MortgageRate" }
+        meta: { $ref: ../../common/envelope.yaml#/components/schemas/Meta }
+        error: { type: "null" }
+
+    Cities:
+      type: object
+      required: [state, cities]
+      properties:
+        state: { type: string }
+        cities:
+          type: array
+          description: City slugs, alphabetical
+          items: { type: string }
+    CitiesResponse:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data: { $ref: "#/components/schemas/Cities" }
+        meta: { $ref: ../../common/envelope.yaml#/components/schemas/Meta }
+        error: { type: "null" }
+      example:
+        data: { state: texas, cities: [austin, dell-city, round-rock] }
+        meta: { count: 3 }
+        error: null
+
+    PlaceDetail:
+      type: object
+      description: Metric fields are null when no source has data for the place.
+      required: [state, city, county]
+      properties:
+        state: { type: string }
+        city: { type: string }
+        county: { type: string }
+        median_value:
+          $ref: "#/components/schemas/NullableNumber"
+          description: Median home value
+        median_tax:
+          $ref: "#/components/schemas/NullableNumber"
+          description: Effective property tax rate, % of value a year
+        median_rent:
+          $ref: "#/components/schemas/NullableNumber"
+          description: Median monthly rent
+        median_fee:
+          $ref: "#/components/schemas/NullableNumber"
+          description: Median monthly HOA fee (state)
+        home_affordability:
+          $ref: "#/components/schemas/NullableNumber"
+          description: Household income needed to buy, per Zillow
+        home_value_growth:
+          $ref: "#/components/schemas/NullableNumber"
+          description: Home value change over the last year, %
+        rental_forecast:
+          $ref: "#/components/schemas/NullableNumber"
+        disaster_risk_score:
+          $ref: "#/components/schemas/NullableNumber"
+        disaster_risk_rating:
+          type: [string, "null"]
+        disaster_risk_hazards:
+          type: [object, "null"]
+          additionalProperties: true
+        data_basis:
+          type: [object, "null"]
+          description: Where each value came from (town, county or metro data)
+          additionalProperties: { type: string }
+    PlaceDetailResponse:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data: { $ref: "#/components/schemas/PlaceDetail" }
+        meta: { $ref: ../../common/envelope.yaml#/components/schemas/Meta }
+        error: { type: "null" }
+
+    RankedLocation:
+      type: object
+      required: [state, city, county, match_score, reach_pick, score_breakdown, score_data_available]
+      properties:
+        state:
+          type: string
+          description: State slug, e.g. texas
+        city:
+          type: string
+          description: City slug, e.g. round-rock
+        county: { type: string }
+        median_value: { $ref: "#/components/schemas/NullableNumber" }
+        median_tax: { $ref: "#/components/schemas/NullableNumber" }
+        median_rent: { $ref: "#/components/schemas/NullableNumber" }
+        median_fee: { $ref: "#/components/schemas/NullableNumber" }
+        home_value_growth: { $ref: "#/components/schemas/NullableNumber" }
+        rental_yield:
+          $ref: "#/components/schemas/NullableNumber"
+          description: Annual rent / median value
+        crime_rate_per_1000: { $ref: "#/components/schemas/NullableNumber" }
+        disaster_risk_rating:
+          type: [string, "null"]
+          description: FEMA National Risk Index rating
+        tax_rate_basis:
+          type: [string, "null"]
+          description: Where the tax rate came from
+        match_score:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: How well the place fits the budget and priorities
+        score_breakdown:
+          type: object
+          description: Each factor's 0-1 score
+          additionalProperties: { type: number }
+        score_data_available:
+          type: object
+          description: Whether each factor had data (no data scores 0.5)
+          additionalProperties: { type: boolean }
+        reach_pick:
+          type: boolean
+          description: A pick a little over budget
+        similar_places:
+          type: array
+          items: { type: string }
+    RankResult:
+      type: object
+      required: [max_price, locations]
+      properties:
+        max_price: { type: number }
+        locations:
+          type: array
+          items: { $ref: "#/components/schemas/RankedLocation" }
+    RankLocationsResponse:
+      type: object
+      required: [data, meta, error]
+      properties:
+        data: { $ref: "#/components/schemas/RankResult" }
+        meta: { $ref: ../../common/envelope.yaml#/components/schemas/Meta }
+        error: { type: "null" }

@@ -24,6 +24,10 @@
   </head>
 
   <body>
+    <nav class="topnav page">
+      <%= link_to "Status", root_path, class: ("current" if current_page?(root_path)) %>
+      <%= link_to "Forms", forms_path, class: ("current" if current_page?(forms_path)) %>
+    </nav>
     <%= yield %>
   </body>
 </html>

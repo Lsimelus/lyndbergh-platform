@@ -1,0 +1,75 @@
+<% content_for :title, "Forms" %>
+
+<main class="page">
+  <header>
+    <h1>Forms</h1>
+    <p class="muted">Contact messages to reply to, and feedback from each product.</p>
+  </header>
+
+  <section>
+    <h2 class="section-title">Contact messages <span class="count"><%= @messages.size %></span></h2>
+    <% if @messages.empty? %>
+      <p class="muted">No messages yet.</p>
+    <% end %>
+    <% @messages.each do |message| %>
+      <article class="site entry">
+        <div class="entry-head">
+          <h3><%= message.subject %></h3>
+          <time class="muted" datetime="<%= message.created_at.iso8601 %>"><%= time_ago_in_words(message.created_at) %> ago</time>
+        </div>
+        <p class="muted">
+          <%= message.name %> · <%= mail_to message.email %> · <%= message.site %>
+        </p>
+        <p class="body"><%= message.message %></p>
+        <%= mail_to message.email, "Reply", subject: "Re: #{message.subject}", class: "button" %>
+      </article>
+    <% end %>
+  </section>
+
+  <section>
+    <h2 class="section-title">Feedback</h2>
+    <% if @feedback.empty? %>
+      <p class="muted">No feedback yet.</p>
+    <% end %>
+    <% @feedback.each do |group| %>
+      <article class="site">
+        <div class="entry-head">
+          <h3><%= group[:site].name %></h3>
+          <span class="muted"><%= pluralize(group[:count], "entry") %></span>
+        </div>
+
+        <div class="rating-summary">
+          <div class="average">
+            <b><%= group[:average] || "—" %></b>
+            <span class="muted">average of 5</span>
+          </div>
+          <dl class="distribution">
+            <% total = group[:ratings].values.sum %>
+            <% 5.downto(1) do |stars| %>
+              <div>
+                <dt><%= stars %>★</dt>
+                <dd><span class="bar" style="width: <%= total.zero? ? 0 : (group[:ratings][stars] * 100.0 / total).round %>%"></span></dd>
+                <dd class="muted"><%= group[:ratings][stars] %></dd>
+              </div>
+            <% end %>
+          </dl>
+        </div>
+
+        <ul class="comments">
+          <% group[:recent].each do |entry| %>
+            <li>
+              <span class="stars" aria-label="<%= entry.rating ? "#{entry.rating} of 5" : "No rating" %>"><%= entry.rating ? "★" * entry.rating : "—" %></span>
+              <div>
+                <% if entry.comment %><p class="body"><%= entry.comment %></p><% end %>
+                <p class="muted small">
+                  <%= entry.page || "no page" %> · <%= entry.email ? mail_to(entry.email) : "anonymous" %> ·
+                  <%= time_ago_in_words(entry.created_at) %> ago
+                </p>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </article>
+    <% end %>
+  </section>
+</main>

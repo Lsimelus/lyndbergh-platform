@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   root "status#index"
+  get "forms" => "forms#index"
   get "up" => "rails/health#show", as: :rails_health_check
 
   namespace :api, defaults: { format: :json } do

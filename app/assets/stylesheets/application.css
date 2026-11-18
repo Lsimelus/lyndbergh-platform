@@ -63,3 +63,29 @@ h2 { margin: 0; font-size: 1.15rem; }
 
 .links { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 0.9rem; }
 .links a { color: var(--muted); }
+
+.topnav { display: flex; gap: 20px; padding-bottom: 0; }
+.topnav a { color: var(--muted); text-decoration: none; font-weight: 600; padding-bottom: 4px; border-bottom: 2px solid transparent; }
+.topnav a.current { color: var(--text); border-color: var(--text); }
+.topnav + .page { padding-top: 16px; }
+
+.section-title { font-size: 1.15rem; margin: 32px 0 12px; }
+.count { color: var(--muted); font-weight: 400; }
+h3 { margin: 0; font-size: 1rem; }
+.entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.entry .muted { margin: 4px 0 0; }
+.body { margin: 8px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+.small { font-size: 0.85rem; }
+.button { display: inline-block; margin-top: 12px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px; color: var(--text); text-decoration: none; font-size: 0.9rem; }
+
+.rating-summary { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.average b { display: block; font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.distribution { flex: 1; min-width: 200px; margin: 0; }
+.distribution div { display: grid; grid-template-columns: 2.5em 1fr 2.5em; gap: 8px; align-items: center; }
+.distribution dt { font-size: 0.85rem; color: var(--muted); }
+.distribution dd { margin: 0; font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+.distribution .bar { display: block; height: 8px; border-radius: 4px; background: var(--up); min-width: 2px; }
+
+.comments { list-style: none; margin: 16px 0 0; padding: 0; }
+.comments li { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+.stars { color: #c98a00; min-width: 5.5em; letter-spacing: 1px; }

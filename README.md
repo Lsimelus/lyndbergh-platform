@@ -383,7 +383,7 @@ Many questionnaire steps feed several charts at once. One store with typed slice
 
 **Stack:** Ruby 4, Rails 8, SQLite, Solid Queue, Minitest, GitHub Actions
 
-**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites.
+**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites. A password-protected /forms page lists contact messages with a Reply link and shows feedback by site: average rating, the 1-5 spread and recent comments.
 
 **Key decisions**
 
@@ -412,7 +412,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Future iterations:** Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents
+**Future iterations:** Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
 
 ## Story bank
 
@@ -481,7 +481,7 @@ What I'm working on now, what's next, and where each project goes from here.
 | [real-calc-client](#real-calc-client) | Superseded by gems/real_calc_web in real-calc |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
 | [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired |
-| [lyndbergh-platform](#lyndbergh-platform) | Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents |
+| [lyndbergh-platform](#lyndbergh-platform) | Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
 
 ## Archive
 
@@ -521,7 +521,7 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ## Platform app
 
-A Rails 8 app (SQLite, Solid Queue) with two jobs.
+A Rails 8 app (SQLite, Solid Queue) with three parts.
 
 **Shared endpoints.** Anything more than one site needs lives here. Schemas, responses and the event-log format: [docs/schemas.md](docs/schemas.md).
 
@@ -529,6 +529,8 @@ A Rails 8 app (SQLite, Solid Queue) with two jobs.
 |---|---|
 | `POST /api/contact-form` | The Portfolio's contact form |
 | `POST /api/feedback` | Feedback buttons (rate the experience and/or comment) on Real Calc and ABChealth |
+
+**Forms page** (`/forms`, password-protected). Contact messages, newest first, each with a Reply link, and feedback grouped by site with the average rating, how ratings are spread across 1–5, and recent comments. Set `ADMIN_PASSWORD` (and optionally `ADMIN_USER`, default `admin`); without it the page is locked everywhere except on my machine.
 
 **Site monitor.** Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency. The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
 
@@ -568,5 +570,5 @@ Each repo has its own port so they can all run at once.
 - [ ] Copy the old messages from fastapi-postgres, point the Portfolio's `REACT_APP_API_URL` here, and retire the FastAPI backend.
 - [ ] Feedback buttons on Real Calc and ABChealth that post to `/api/feedback`.
 - [ ] Add `session_id` to real-calc's request log (event-log format) and mention it on its privacy page.
-- [ ] Forms page: contact messages to reply to, and feedback by site with average ratings.
+- [x] Forms page: contact messages to reply to, and feedback by site with average ratings.
 - [ ] PR agents: review open PRs across my repos and push fixes for review comments, with a page here showing what each agent did.

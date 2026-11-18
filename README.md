@@ -89,6 +89,7 @@ flowchart TD
   locations --> public_data_apis
   notifications --> session_tokens
   operations --> market_data
+  operations --> notifications
   plans --> session_tokens
   plans --> locations
 ```
@@ -441,9 +442,15 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Up next
 
-- [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
-- [ ] Decide where the ABChealth landing site lives (Vercel Hobby forbids commercial use): Vercel Pro, its own AWS account, or Cloudflare Pages
+- [ ] Deploy step 1 (me): create a Hetzner CX22 (Ubuntu 24.04, Ashburn) with my SSH key, plus a GitHub token with write:packages for the image registry, and send Claude the IP
+- [ ] Deploy step 2: fix real-calc's failing Security CI job (failing nightly since 2026-11-17) before go-live
+- [ ] Deploy step 3: restore real-calc's Kamal config from git history, with Postgres on the server (Kamal accessory) and daily backups instead of Neon
+- [ ] Deploy step 4: point realcalc.lyndbergh.net at the VPS in Google Cloud DNS (today it points at the AWS load balancer), check /health and sign-in, then tear down the AWS stack to stop the idle bill (~$27/month; keep the Terraform code)
 - [ ] Deploy lyndbergh-platform with Kamal on the same VPS as real-calc, with daily SQLite backups and a free healthchecks.io heartbeat so I still hear about it if the server goes down
+- [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
+- [ ] Commit the dev-port changes in real-calc, real-calc-client, abchealth-expressjs, fastapi-postgres and Portfolio, and decide whether to keep the two openapi.yaml files
+- [ ] Re-date the overdue ABChealth todos (Nov 4/8/15), or keep ABChealth items out of the public README
+- [ ] Decide with the founders where the ABChealth landing site lives (Vercel Hobby forbids commercial use; it also needs a long-running server for its cron): Vercel Pro or Render on an account they own. abchealth.lyndbergh.net is fine for a preview; launch on their own domain so the App Store privacy/terms links never change
 - [ ] PR-review agents for my repos on the Anthropic API (Managed Agents), with a page on the platform showing what each did — after the advisor's eval ships
 - [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
 - [ ] Add feedback buttons (rate the experience and/or comment) to Real Calc and ABChealth, posting to lyndbergh-platform's /api/feedback

@@ -379,17 +379,19 @@ Many questionnaire steps feed several charts at once. One store with typed slice
 
 **Status:** Built Nov 2026; monitoring works locally, deploy pending
 
-> A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. I run sites across Rails, Express, FastAPI and Vercel and had no single place that told me which were up. The first run caught a real bug: my ABCHealth API URL was returning the static HTML page with a 200, so a plain uptime check would have called it healthy. I check that APIs answer in JSON, which caught it. Its README is also the public walkthrough of all my projects.
+> A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. I run sites across Rails, Express, FastAPI and Vercel and had no single place that told me which were up. The first run caught a real bug: my ABCHealth API URL was returning the static HTML page with a 200, so a plain uptime check would have called it healthy. I check that APIs answer in JSON, which caught it. It also holds the endpoints my sites share (the contact form and feedback), and its README is the public walkthrough of all my projects.
 
 **Stack:** Ruby 4, Rails 8, SQLite, Solid Queue, Minitest, GitHub Actions
 
-**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services.
+**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites.
 
 **Key decisions**
 
 - **Sites in YAML, not a table.** Four to eight sites that change rarely; editing a file in a PR is reviewable and needs no admin UI. *Trade-off:* Adding a site needs a deploy.
 - **Check for JSON instead of full OpenAPI validation.** I first validated health responses against each service's OpenAPI spec, then cut it: it needed vendored specs, Redocly and codegen for four endpoints. `expect: json` catches the same deploy failure in five lines. *Trade-off:* It won't catch a JSON response with the wrong shape.
 - **Rails 8 + SQLite + Solid Queue.** One process, one file database, built-in recurring jobs: nothing extra to host. *Trade-off:* Single server; fine for a personal monitor.
+- **Two tables for contact messages and feedback, not one.** I drafted one form_entries table, but almost every rule became 'unless it's feedback'. Contact messages need every field and get a reply; feedback is often anonymous, has a 1-5 rating and is read in bulk. *Trade-off:* Two endpoints and tables instead of one; shared rules live in an abstract Submission model so they aren't duplicated.
+- **Shared endpoints live in the platform, not in a product.** Portfolio messages are personal, not Real Calc's, and shouldn't depend on Real Calc's hosting. *Trade-off:* The platform has to stay up for every site's forms, so it needs its own host and backups.
 
 **Numbers**
 
@@ -410,7 +412,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Future iterations:** Deploy it; Alert on up-to-down transitions; Move the Portfolio contact form backend here; Forms page; PR review agents
+**Future iterations:** Deploy it on its own VPS with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents
 
 ## Story bank
 
@@ -442,7 +444,9 @@ What I'm working on now, what's next, and where each project goes from here.
 
 - [ ] Decide where the ABChealth landing site lives (Vercel Hobby forbids commercial use): Vercel Pro, its own AWS account, or Cloudflare Pages
 - [ ] Fix the CI Terraform plan: let the plan role write only the .tflock file, and set pipefail so a failed plan fails the step
-- [ ] Point the Portfolio contact form at Real Calc's /api/contact-form and retire the fastapi-postgres Vercel backend
+- [ ] Deploy lyndbergh-platform with Kamal to its own small VPS (not real-calc's host), with daily SQLite backups
+- [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
+- [ ] Add feedback buttons (rate the experience and/or comment) to Real Calc and ABChealth, posting to lyndbergh-platform's /api/feedback
 - [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
 - [ ] Finish Apple Music → YouTube Music playlist app (playlist-video-converter) — due 2027-01-31
 - [ ] ABChealth [pre-Apple]: stand up production Supabase: apply the 8 SQL files, auth redirects + Google provider, full simulator test against prod (due 2026-11-08)
@@ -477,7 +481,7 @@ What I'm working on now, what's next, and where each project goes from here.
 | [real-calc-client](#real-calc-client) | Superseded by gems/real_calc_web in real-calc |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
 | [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired |
-| [lyndbergh-platform](#lyndbergh-platform) | Deploy it; Alert on up-to-down transitions; Move the Portfolio contact form backend here; Forms page; PR review agents |
+| [lyndbergh-platform](#lyndbergh-platform) | Deploy it on its own VPS with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; Forms page; PR review agents |
 
 ## Archive
 

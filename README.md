@@ -435,16 +435,17 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### In progress
 
-- [ ] real-calc v1 live on AWS: get the ECS block lifted (Support case), start RDS, push 846338d to deploy, run the first data load, check /health and sign-in — due Thanksgiving 2026-11-26
+- [ ] real-calc v1 live on a Kamal VPS (Hetzner, ~€5-10/month) instead of AWS: create the server, Postgres on it with daily backups, kamal setup, first data load, check /health and sign-in. Keep the Terraform/AWS build as the story (built it, hit an account block, moved to a portable setup) — due Thanksgiving 2026-11-26
 - [ ] Add error tracking, structured logs and one alert to real-calc, and fill in its links row — part of real-calc v1, due 2026-11-26
 - [ ] Write a runbook for real-calc: deploy, rollback, restore the DB — part of real-calc v1, due 2026-11-26
-- [ ] real-calc AI feature (Stage 2) shipped via the Anthropic API (Claude Sonnet 5.5, prompt caching) with an eval suite (golden test set + scored runs) — due 2026-12-31
+- [ ] Turn on real-calc's location advisor on Bedrock from the VPS (IAM user allowed only InvokeModel on the Claude models, key in Kamal secrets, AWS Budgets alert), then ship its eval suite (golden test set + scored runs) — due 2026-12-31
 
 ### Up next
 
 - [ ] Decide where the ABChealth landing site lives (Vercel Hobby forbids commercial use): Vercel Pro, its own AWS account, or Cloudflare Pages
 - [ ] Fix the CI Terraform plan: let the plan role write only the .tflock file, and set pipefail so a failed plan fails the step
-- [ ] Deploy lyndbergh-platform on a host separate from real-calc's AWS account, with daily SQLite backups. Waiting on the host decision: Render (recommended, ~$8/month, deploys on push), Fly.io (~$2-5) or Kamal on a ~€4 VPS. AWS is out for now (ECS block, and the account quota increase was denied 2026-11-18). Not Vercel (no long-running jobs or disk for Rails + SQLite).
+- [ ] Deploy lyndbergh-platform with Kamal on the same VPS as real-calc, with daily SQLite backups and a free healthchecks.io heartbeat so I still hear about it if the server goes down
+- [ ] PR-review agents for my repos on the Anthropic API (Managed Agents), with a page on the platform showing what each did — after the advisor's eval ships
 - [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
 - [ ] Add feedback buttons (rate the experience and/or comment) to Real Calc and ABChealth, posting to lyndbergh-platform's /api/feedback
 - [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
@@ -565,11 +566,11 @@ Each repo has its own port so they can all run at once.
 
 ### TODO
 
-- [ ] Deploy it on a host separate from real-calc's AWS account, with daily SQLite backups, and add it to the Portfolio. Host not chosen yet: Render (recommended), Fly.io or Kamal on a VPS. AWS is out for now (no second account allowed yet). Not Vercel: it can't run the recurring checks or keep the SQLite database.
+- [ ] Deploy it with Kamal on the same VPS as real-calc, with daily SQLite backups and a healthchecks.io heartbeat (so a dead server still alerts me), and add it to the Portfolio.
+- [ ] PR-review agents on the Anthropic API (Managed Agents), after real-calc's advisor ships with its eval.
 - [ ] Alert when a site goes from up to down (email or a webhook).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
 - [ ] Copy the old messages from fastapi-postgres, point the Portfolio's `REACT_APP_API_URL` here, and retire the FastAPI backend.
 - [ ] Feedback buttons on Real Calc and ABChealth that post to `/api/feedback`.
 - [ ] Add `session_id` to real-calc's request log (event-log format) and mention it on its privacy page.
 - [x] Forms page: contact messages to reply to, and feedback by site with average ratings.
-- [ ] PR agents: review open PRs across my repos and push fixes for review comments, with a page here showing what each agent did.

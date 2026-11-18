@@ -561,7 +561,7 @@ Each repo has its own port so they can all run at once.
 
 | Repo | Port |
 |---|---|
-| real-calc | 3000 (Vite 3036) |
+| real-calc | 3000 (Vite 3036, end-to-end tests 3110) |
 | abchealth-expressjs | 3001 |
 | Portfolio | 3002 |
 | real-calc-client | 3003 |

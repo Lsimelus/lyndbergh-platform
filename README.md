@@ -1,9 +1,9 @@
 # Lyndbergh Platform
 
-My projects in one place, plus the small Rails app that keeps an eye on them.
+My projects in one place, plus the small Rails app behind them: it monitors every site and holds the endpoints they share.
 
 - **[Projects](#projects):** a walkthrough of each project: what it does, how it's built, the decisions and trade-offs, and the questions I'd expect about it.
-- **[Site monitor](#site-monitor):** this repo's app, which checks every live site every 5 minutes.
+- **[Platform app](#platform-app):** this repo's Rails app: the site monitor, plus the contact form and feedback endpoints every site shares.
 
 <!-- walkthrough:start -->
 
@@ -515,9 +515,18 @@ What I'm working on now, what's next, and where each project goes from here.
 
 <!-- walkthrough:end -->
 
-## Site monitor
+## Platform app
 
-Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency. The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
+A Rails 8 app (SQLite, Solid Queue) with two jobs.
+
+**Shared endpoints.** Anything more than one site needs lives here. Schemas, responses and the event-log format: [docs/schemas.md](docs/schemas.md).
+
+| Endpoint | Used by |
+|---|---|
+| `POST /api/contact-form` | The Portfolio's contact form |
+| `POST /api/feedback` | Feedback buttons (rate the experience and/or comment) on Real Calc and ABChealth |
+
+**Site monitor.** Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency. The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
 
 ### Running it
 
@@ -549,8 +558,11 @@ Each repo has its own port so they can all run at once.
 
 ### TODO
 
-- [ ] Deploy it (Kamal to the VPS planned for real-calc) and add it to the Portfolio.
+- [ ] Deploy it with Kamal to its own small VPS (not real-calc's host), with daily SQLite backups, and add it to the Portfolio.
 - [ ] Alert when a site goes from up to down (email or a webhook).
-- [ ] Move the Portfolio contact form backend here (`POST /api/contact-form`), with rate limiting and a honeypot field, then point the Portfolio at it and retire the FastAPI backend.
-- [ ] Forms page: show contact form submissions, and read product forms (Real Calc feedback, ABCHealth) from each service's admin API without moving them.
+- [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
+- [ ] Copy the old messages from fastapi-postgres, point the Portfolio's `REACT_APP_API_URL` here, and retire the FastAPI backend.
+- [ ] Feedback buttons on Real Calc and ABChealth that post to `/api/feedback`.
+- [ ] Add `session_id` to real-calc's request log (event-log format) and mention it on its privacy page.
+- [ ] Forms page: contact messages to reply to, and feedback by site with average ratings.
 - [ ] PR agents: review open PRs across my repos and push fixes for review comments, with a page here showing what each agent did.

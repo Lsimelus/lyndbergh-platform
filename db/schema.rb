@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_18_164730) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_18_174237) do
   create_table "checks", force: :cascade do |t|
     t.string "site_slug", null: false
     t.boolean "ok", null: false
@@ -20,5 +20,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_164730) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["site_slug"], name: "index_checks_on_site_slug"
+  end
+
+  create_table "contact_messages", force: :cascade do |t|
+    t.string "site", default: "portfolio", null: false
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "subject", null: false
+    t.text "message", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_contact_messages_on_created_at"
+  end
+
+  create_table "feedback", force: :cascade do |t|
+    t.string "site", null: false
+    t.integer "rating"
+    t.text "comment"
+    t.string "page"
+    t.string "user_ref"
+    t.string "email"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["site", "created_at"], name: "index_feedback_on_site_and_created_at"
+    t.index ["site", "user_ref"], name: "index_feedback_on_site_and_user_ref"
   end
 end

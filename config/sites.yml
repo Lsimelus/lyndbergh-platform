@@ -1,10 +1,12 @@
 # Every site the platform monitors. `health_path` defaults to /.
 # `expect: json` marks the check down unless the response is JSON (catches a host
-# serving its HTML page where the API should be).
+# serving its HTML page where the API should be). `traffic` links to where that site's
+# visitor numbers live (Vercel Web Analytics, or the app's own admin page).
 - slug: portfolio
   name: Portfolio
   url: https://www.lyndbergh.net
   repo: Lsimelus/Portfolio
+  traffic: https://vercel.com/d?to=%2F%5Bteam%5D%2Fportfolio%2Fanalytics&title=Open+Portfolio+analytics
 
 - slug: real-calc
   name: Real Calc
@@ -12,6 +14,13 @@
   health_path: /health
   repo: Lsimelus/real-calc
   expect: json
+  traffic: https://realcalc.lyndbergh.net/admin/telemetry
+
+- slug: real-calc-client
+  name: Real Calc client (legacy)
+  url: https://real-calc-client-blush.vercel.app
+  repo: Lsimelus/real-calc-client
+  traffic: https://vercel.com/d?to=%2F%5Bteam%5D%2Freal-calc-client%2Fanalytics&title=Open+real-calc-client+analytics
 
 - slug: abchealth
   name: ABCHealth

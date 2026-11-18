@@ -9,5 +9,6 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     Site.all.each { |site| assert_select "h2", site.name }
     assert_select ".error", "HTTP 503"
+    assert_select "a[href='https://realcalc.lyndbergh.net/admin/telemetry']", "Traffic"
   end
 end

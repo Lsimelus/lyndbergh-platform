@@ -109,7 +109,7 @@ Arrows point to what a component may call; Packwerk enforces them (no cycles). R
 - **One AWS account per app under Organizations + Identity Center.** Contained blast radius, per-app costs, clean teardown; short-lived credentials with MFA instead of IAM users or root. *Trade-off:* More setup up front, and new organizations start with a low account quota.
 - **Fill data gaps from city/county data, and record the source.** Zillow metro files covered only ~47% of places; town/county Zillow and FHFA data lifted growth to 92% and rent to 66%. data_basis says where each value came from. *Trade-off:* Scores no longer match the old Python app for places that had no data, so the parity check was retired.
 - **Tests can never call a model.** In the test environment Bedrock points at a .invalid host with fake credentials, WebMock blocks the network, and any request to AWS or Anthropic fails the spec. *Trade-off:* The eval suite that calls the real model has to be a separate, deliberate run.
-- **Stopgap: deploy into the Organization's management account.** The Organizations account quota is 1, so the real-calc member account can't be created yet. The Terraform reads the account from the caller, so only the profile changed. *Trade-off:* Breaks my own one-account-per-app rule: SCPs don't apply to the management account, and moving later means an RDS snapshot copy, new cert and DNS swap.
+- **Stopgap: deploy into the Organization's management account.** The Organizations account quota is 1, so the real-calc member account can't be created yet. The Terraform reads the account from the caller, so only the profile changed. On 2026-11-18 AWS declined to raise it (limited usage history), so the stopgap stays until I can re-request. *Trade-off:* Breaks my own one-account-per-app rule: SCPs don't apply to the management account, and moving later means an RDS snapshot copy, new cert and DNS swap.
 - **Stay on AWS instead of a $6 VPS (2026-11-13).** I priced the alternatives (AWS ~$65-70/month, VPS + Kamal + Neon ~$6-12, Vercel split) and built the VPS setup, then chose AWS for production-grade infrastructure and the hands-on experience employers ask for. *Trade-off:* About $60 a month more with no users yet, plus account friction (quota, ECS block).
 - **Trust GitHub's immutable OIDC subject.** The repo's tokens say repo:Lsimelus@45671470/real-calc@1442215665:..., so trust policies match owner and repo IDs. A renamed or re-created repo can't assume the roles. *Trade-off:* The subject is less readable; the variable documents how to look it up with gh api.
 
@@ -444,7 +444,7 @@ What I'm working on now, what's next, and where each project goes from here.
 
 - [ ] Decide where the ABChealth landing site lives (Vercel Hobby forbids commercial use): Vercel Pro, its own AWS account, or Cloudflare Pages
 - [ ] Fix the CI Terraform plan: let the plan role write only the .tflock file, and set pipefail so a failed plan fails the step
-- [ ] Deploy lyndbergh-platform on a host separate from real-calc's AWS account, with daily SQLite backups. Waiting on the host decision: Render (recommended, ~$8/month, deploys on push), Fly.io (~$2-5), Kamal on a ~€4 VPS, or AWS Lightsail in its own account once the Organizations quota is raised and the ECS block is lifted. Not Vercel (no long-running jobs or disk for Rails + SQLite).
+- [ ] Deploy lyndbergh-platform on a host separate from real-calc's AWS account, with daily SQLite backups. Waiting on the host decision: Render (recommended, ~$8/month, deploys on push), Fly.io (~$2-5) or Kamal on a ~€4 VPS. AWS is out for now (ECS block, and the account quota increase was denied 2026-11-18). Not Vercel (no long-running jobs or disk for Rails + SQLite).
 - [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
 - [ ] Add feedback buttons (rate the experience and/or comment) to Real Calc and ABChealth, posting to lyndbergh-platform's /api/feedback
 - [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
@@ -461,6 +461,7 @@ What I'm working on now, what's next, and where each project goes from here.
 ### Someday
 
 - [ ] ABChealth launch: upgrade Supabase to Pro ($25/month) before real users (free projects pause after ~a week idle)
+- [ ] Re-request the AWS Organizations account quota after ~3 months of steady usage, then move real-calc out of the management account into its own member account (RDS snapshot copy, new cert, DNS swap)
 
 ### Recently done
 
@@ -564,7 +565,7 @@ Each repo has its own port so they can all run at once.
 
 ### TODO
 
-- [ ] Deploy it on a host separate from real-calc's AWS account, with daily SQLite backups, and add it to the Portfolio. Host not chosen yet: Render (recommended), Fly.io, Kamal on a VPS, or AWS Lightsail in its own account. Not Vercel: it can't run the recurring checks or keep the SQLite database.
+- [ ] Deploy it on a host separate from real-calc's AWS account, with daily SQLite backups, and add it to the Portfolio. Host not chosen yet: Render (recommended), Fly.io or Kamal on a VPS. AWS is out for now (no second account allowed yet). Not Vercel: it can't run the recurring checks or keep the SQLite database.
 - [ ] Alert when a site goes from up to down (email or a webhook).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
 - [ ] Copy the old messages from fastapi-postgres, point the Portfolio's `REACT_APP_API_URL` here, and retire the FastAPI backend.

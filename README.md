@@ -158,7 +158,7 @@ On cost alone, yes: a $6 VPS with Kamal and Neon runs the same image, and I buil
 
 </details>
 
-**Next:** Get AWS Support to lift the ECS block, start RDS, deploy and run the first data load; Turn on the advisor (Bedrock) and run the eval suite; Redfin and HUD data to fill the remaining metro-only gaps; Runbook drills: restore the database from a snapshot
+**Future iterations:** Get AWS Support to lift the ECS block, start RDS, deploy and run the first data load; Turn on the advisor (Bedrock) and run the eval suite; Redfin and HUD data to fill the remaining metro-only gaps; Runbook drills: restore the database from a snapshot
 
 ### abchealth-swiftapp
 
@@ -199,7 +199,7 @@ Production Supabase and auth go live first, with a full simulator test against p
 
 </details>
 
-**Next:** Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild
+**Future iterations:** Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild
 
 ### playlist-video-converter
 
@@ -236,7 +236,7 @@ Fixed cases for the tricky ones (masked titles, remixes, lyric videos, artist-ch
 
 </details>
 
-**Next:** git init and push, then CI; A golden set of playlists to measure precision and recall
+**Future iterations:** git init and push, then CI; A golden set of playlists to measure precision and recall
 
 ## Supporting
 
@@ -277,7 +277,7 @@ Min-max normalize each of the ten factors across the cities that pass the budget
 
 </details>
 
-**Next:** Superseded by real-calc
+**Future iterations:** Superseded by real-calc
 
 ### real-calc-client
 
@@ -312,7 +312,7 @@ Many questionnaire steps feed several charts at once. One store with typed slice
 
 </details>
 
-**Next:** Superseded by gems/real_calc_web in real-calc
+**Future iterations:** Superseded by gems/real_calc_web in real-calc
 
 ### abchealth-expressjs
 
@@ -346,7 +346,7 @@ Many questionnaire steps feed several charts at once. One store with typed slice
 
 </details>
 
-**Next:** Logging and uptime checks; Move the cron to Vercel Cron
+**Future iterations:** Logging and uptime checks; Move the cron to Vercel Cron
 
 ### Portfolio
 
@@ -372,7 +372,7 @@ Many questionnaire steps feed several charts at once. One store with typed slice
 
 - The contact backend has moved three times (Render Node → Flask → FastAPI), each time behind the same form.
 
-**Next:** Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired
+**Future iterations:** Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired
 
 ### lyndbergh-platform
 
@@ -411,7 +411,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Next:** Deploy it; Alert on up-to-down transitions; Move the Portfolio contact form backend here; Forms page; PR review agents
+**Future iterations:** Deploy it; Alert on up-to-down transitions; Move the Portfolio contact form backend here; Forms page; PR review agents
 
 ## Story bank
 
@@ -427,6 +427,58 @@ Behavioral prompts mapped to real moments in these projects.
 | Security / auth design | abchealth-expressjs / ABChealth | Postgres-backed revocable sessions, httpOnly cookies that are secure in production, requireRole returning 401 vs 403 correctly (with tests), and Supabase RLS on every user table. |
 | Tell me about a time you changed direction | real-calc | Built full AWS infra in Terraform and applied it, then hit an account-level ECS block. I priced the alternatives (AWS $65-70, Vercel split, VPS + Neon ~$6), measured the data against Neon's free cap, and built a working Kamal setup as a fallback. Then I made the call to stay on AWS for production-grade infrastructure, with the fallback ready if the block drags on. |
 | Debugging something you didn't understand at first | real-calc | GitHub Actions couldn't assume any AWS role. The trust policies looked right, so I went to CloudTrail, which showed the token's actual subject used GitHub's immutable owner/repo IDs. Matched the policy to it, applied, and the next run logged in and pushed the image. |
+
+## Roadmap
+
+What I'm working on now, what's next, and where each project goes from here.
+
+### In progress
+
+- [ ] real-calc v1 live on AWS: get the ECS block lifted (Support case), start RDS, push 846338d to deploy, run the first data load, check /health and sign-in — due Thanksgiving 2026-11-26
+- [ ] Add error tracking, structured logs and one alert to real-calc, and fill in its links row — part of real-calc v1, due 2026-11-26
+- [ ] Write a runbook for real-calc: deploy, rollback, restore the DB — part of real-calc v1, due 2026-11-26
+- [ ] real-calc AI feature (Stage 2) shipped via the Anthropic API (Claude Sonnet 5.5, prompt caching) with an eval suite (golden test set + scored runs) — due 2026-12-31
+
+### Up next
+
+- [ ] Decide where the ABChealth landing site lives (Vercel Hobby forbids commercial use): Vercel Pro, its own AWS account, or Cloudflare Pages
+- [ ] Fix the CI Terraform plan: let the plan role write only the .tflock file, and set pipefail so a failed plan fails the step
+- [ ] Point the Portfolio contact form at Real Calc's /api/contact-form and retire the fastapi-postgres Vercel backend
+- [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
+- [ ] Finish Apple Music → YouTube Music playlist app (playlist-video-converter) — due 2027-01-31
+- [ ] ABChealth [pre-Apple]: stand up production Supabase: apply the 8 SQL files, auth redirects + Google provider, full simulator test against prod (due 2026-11-08)
+- [ ] ABChealth [pre-Apple]: deploy the landing site with /privacy and /terms live (set CONTACT_EMAIL in Vercel) (due 2026-11-08)
+- [ ] ABChealth [pre-Apple]: add Sentry crash reporting + a unit test target for the date decoder and GoalsViewModel (due 2026-11-15)
+- [ ] ABChealth [pre-Apple]: write 10-15 evergreen articles, take simulator screenshots, draft listing copy, create the App Review demo account (due 2026-11-15)
+- [ ] ABChealth [pre-Apple]: wire or delete the 3 unreachable screens (Create post, Activity, Profile) (due 2026-11-15)
+- [ ] ABChealth [post-Apple]: set team + Sign in with Apple, add Supabase Apple provider, upload 1.0 (1) to TestFlight and test on 2 iPhones (due 2026-11-22)
+- [ ] ABChealth [post-Apple]: run an external TestFlight beta with 15-30 waitlist users; fix crashes only (Nov 23 - Dec 6)
+- [ ] ABChealth [post-Apple]: submit for review Dec 8, launch Dec 14, email the waitlist, watch crash reports for 48h (due 2026-12-14)
+
+### Someday
+
+- [ ] ABChealth launch: upgrade Supabase to Pro ($25/month) before real users (free projects pause after ~a week idle)
+
+### Recently done
+
+- [x] data:refresh ends with VACUUM ANALYZE so the database stops growing each month (commit 5970785) (2026-11-13)
+- [x] Write an ADR for the FastAPI → Rails modular monolith decision (2026-11-08)
+- [x] Set up CI, Dependabot and security scanning for real-calc on GitHub Actions — part of real-calc v1, due 2026-11-26 (2026-11-08)
+- [x] ABChealth: found and fixed RLS bug: cross-user Postgres triggers (DM threads, like/comment counts, notifications) now SECURITY DEFINER, verified on scratch Postgres (2026-11-01)
+- [x] ABChealth: App Store blockers built: account deletion, report/block, privacy manifest, app icon/logo, privacy + terms pages, iPhone-only iOS 26 (2026-11-01)
+
+### Future iterations
+
+| Project | Next iterations |
+|---|---|
+| [real-calc](#real-calc) | Get AWS Support to lift the ECS block, start RDS, deploy and run the first data load; Turn on the advisor (Bedrock) and run the eval suite; Redfin and HUD data to fill the remaining metro-only gaps; Runbook drills: restore the database from a snapshot |
+| [abchealth-swiftapp](#abchealth-swiftapp) | Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild |
+| [playlist-video-converter](#playlist-video-converter) | git init and push, then CI; A golden set of playlists to measure precision and recall |
+| [fastapi-postgres](#fastapi-postgres) | Superseded by real-calc |
+| [real-calc-client](#real-calc-client) | Superseded by gems/real_calc_web in real-calc |
+| [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
+| [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired |
+| [lyndbergh-platform](#lyndbergh-platform) | Deploy it; Alert on up-to-down transitions; Move the Portfolio contact form backend here; Forms page; PR review agents |
 
 ## Archive
 

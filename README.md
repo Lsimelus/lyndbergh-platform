@@ -9,13 +9,28 @@ Every 5 minutes it requests each site's health URL and records whether it's up, 
 ```bash
 bundle install
 bin/rails db:prepare
-bin/dev            # http://localhost:3000
+bin/dev            # http://localhost:3004
 bin/jobs           # runs the checks every 5 minutes
 bin/rails test
 ```
 
 Run one round of checks by hand: `bin/rails runner CheckSitesJob.perform_now`.
 Add a site by adding an entry to `config/sites.yml`.
+
+## Local ports
+
+Each repo has its own port so they can all run at once.
+
+| Repo | Port |
+|---|---|
+| real-calc | 3000 (Vite 3036) |
+| abchealth-expressjs | 3001 |
+| Portfolio | 3002 |
+| real-calc-client | 3003 |
+| lyndbergh-platform | 3004 |
+| playlist-video-converter | 3100 (Rails UI), 8787 (server), 8788 (CLI sign-in) |
+| fastapi-postgres | 8000 |
+| Postgres | 5432 |
 
 ## TODO
 

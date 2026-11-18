@@ -437,13 +437,12 @@ What I'm working on now, what's next, and where each project goes from here.
 
 - [ ] real-calc v1 live on a Kamal VPS (Hetzner, ~€5-10/month) instead of AWS: create the server, Postgres on it with daily backups, kamal setup, first data load, check /health and sign-in. Keep the Terraform/AWS build as the story (built it, hit an account block, moved to a portable setup) — due Thanksgiving 2026-11-26
 - [ ] Add error tracking, structured logs and one alert to real-calc, and fill in its links row — part of real-calc v1, due 2026-11-26
-- [ ] Write a runbook for real-calc: deploy, rollback, restore the DB — part of real-calc v1, due 2026-11-26
 - [ ] Turn on real-calc's location advisor on Bedrock from the VPS (IAM user allowed only InvokeModel on the Claude models, key in Kamal secrets, AWS Budgets alert), then ship its eval suite (golden test set + scored runs) — due 2026-12-31
 
 ### Up next
 
+- [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
 - [ ] Decide where the ABChealth landing site lives (Vercel Hobby forbids commercial use): Vercel Pro, its own AWS account, or Cloudflare Pages
-- [ ] Fix the CI Terraform plan: let the plan role write only the .tflock file, and set pipefail so a failed plan fails the step
 - [ ] Deploy lyndbergh-platform with Kamal on the same VPS as real-calc, with daily SQLite backups and a free healthchecks.io heartbeat so I still hear about it if the server goes down
 - [ ] PR-review agents for my repos on the Anthropic API (Managed Agents), with a page on the platform showing what each did — after the advisor's eval ships
 - [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres

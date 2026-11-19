@@ -30,6 +30,8 @@ env:
   secret:
     - RAILS_MASTER_KEY
     - ADMIN_PASSWORD
+    - ALERT_URL
+    - HEARTBEAT_URL
 
 # SQLite databases and their nightly backups (storage/backups) live in this Docker volume.
 volumes:

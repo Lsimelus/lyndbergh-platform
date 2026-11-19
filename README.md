@@ -476,7 +476,8 @@ Add a site by adding an entry to `config/sites.yml`.
 It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzner VPS as real-calc
 (its own container behind the shared kamal-proxy). `bin/prod` wraps Kamal and loads `.env.production`
 (gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
-`ADMIN_PASSWORD` (the login for every page; the API stays open). SQLite lives in the `lyndbergh_platform_storage` volume and a
+`ADMIN_PASSWORD` (the login for every page; the API stays open), `ALERT_URL` (ntfy.sh topic for down/up pushes) and
+`HEARTBEAT_URL` (healthchecks.io ping, so a dead server alerts too). SQLite lives in the `lyndbergh_platform_storage` volume and a
 nightly job copies it to `storage/backups` (14 days kept).
 
 ```bash
@@ -502,9 +503,10 @@ Each repo has its own port so they can all run at once.
 ### TODO
 
 - [x] Deploy it with Kamal on the same VPS as real-calc, with nightly SQLite backups.
-- [ ] A healthchecks.io heartbeat so a dead server still alerts me, and add it to the Portfolio.
+- [x] A healthchecks.io heartbeat (`HEARTBEAT_URL`) so a dead server still alerts me.
+- [ ] Add it to the Portfolio.
 - [ ] PR-review agents on the Anthropic API (Managed Agents), after real-calc's advisor ships with its eval.
-- [ ] Alert when a site goes from up to down (email or a webhook).
+- [x] Alert when a site goes down or comes back (`ALERT_URL`, an ntfy.sh topic: push to my phone).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
 - [x] Copy the old messages from fastapi-postgres (39 imported 2026-11-18).
 - [x] Point the Portfolio's `REACT_APP_API_URL` here (Vercel env only) and retire the FastAPI backend.

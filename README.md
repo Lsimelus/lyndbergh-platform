@@ -441,10 +441,7 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Up next
 
-- [ ] Deploy step 1 (me): create the Hetzner cx23 (x86, 2 vCPU, 4 GB, ~$7/month) in Nuremberg with Ubuntu 24.04 and my SSH key, put the GitHub token (write:packages) in real-calc-kamal/.env.production, and send Claude the IP
-- [ ] Deploy step 2: fix real-calc's failing Security CI job (failing nightly since 2026-11-17) before go-live
-- [ ] Deploy step 3: restore real-calc's Kamal config from git history, with Postgres on the server (Kamal accessory) and daily backups instead of Neon
-- [ ] Deploy step 4: before go-live, turn on Hetzner Backups (~$1.30/month) and attach a 'web' firewall (inbound TCP 22, 80, 443 + ICMP only); add https://realcalc.lyndbergh.net/auth/google_oauth2/callback to the Google sign-in client; point realcalc.lyndbergh.net at the VPS in Google Cloud DNS (today it points at the AWS load balancer), check /health and sign-in, then tear down the AWS stack to stop the idle bill (~$27/month; keep the Terraform code)
+- [ ] Deploy step 4: run the first data load (kamal refresh), add https://realcalc.lyndbergh.net/auth/google_oauth2/callback to the Google sign-in client and test sign-in, turn on Hetzner Backups and attach a 'web' firewall (TCP 22/80/443 + ICMP), switch the deploy and market-data workflows from ECS to Kamal, replace the GitHub token (it was pasted in chat), then tear down the AWS stack (~$27/month idle; keep the Terraform code). DNS already points at the VPS.
 - [ ] Deploy lyndbergh-platform with Kamal on the same VPS as real-calc, with daily SQLite backups and a free healthchecks.io heartbeat so I still hear about it if the server goes down
 - [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
 - [ ] Commit the dev-port changes in real-calc, real-calc-client, abchealth-expressjs, fastapi-postgres and Portfolio, and decide whether to keep the two openapi.yaml files
@@ -471,11 +468,11 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Recently done
 
+- [x] real-calc Security CI fixed (Puma 8.0.2 -> 8.1.2) (2026-11-18)
+- [x] Kamal config for real-calc (Postgres + nightly pg_dump accessories, server-side build, ghcr.io); kamal setup took 4 minutes; realcalc.lyndbergh.net live with Let's Encrypt HTTPS (2026-11-18)
+- [x] Hetzner server created (CX22, Helsinki, 46.62.241.225), SSH key and GitHub token set up (2026-11-18)
 - [x] data:refresh ends with VACUUM ANALYZE so the database stops growing each month (commit 5970785) (2026-11-13)
 - [x] Write an ADR for the FastAPI → Rails modular monolith decision (2026-11-08)
-- [x] Set up CI, Dependabot and security scanning for real-calc on GitHub Actions — part of real-calc v1, due 2026-11-26 (2026-11-08)
-- [x] ABChealth: found and fixed RLS bug: cross-user Postgres triggers (DM threads, like/comment counts, notifications) now SECURITY DEFINER, verified on scratch Postgres (2026-11-01)
-- [x] ABChealth: App Store blockers built: account deletion, report/block, privacy manifest, app icon/logo, privacy + terms pages, iPhone-only iOS 26 (2026-11-01)
 
 ### Future iterations
 

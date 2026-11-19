@@ -304,7 +304,7 @@ Fixed cases for the tricky ones (masked titles, remixes, lyric videos, artist-ch
 
 **Stack:** Ruby 4, Rails 8, SQLite, Solid Queue, Minitest, GitHub Actions
 
-**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites. A password-protected /forms page lists contact messages with a Reply link and shows feedback by site: average rating, the 1-5 spread and recent comments.
+**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites. Every page (status and /forms) is behind one admin login; only the two API endpoints are public. The /forms page lists contact messages with a Reply link and shows feedback by site: average rating, the 1-5 spread and recent comments.
 
 **Key decisions**
 
@@ -476,7 +476,7 @@ Add a site by adding an entry to `config/sites.yml`.
 It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzner VPS as real-calc
 (its own container behind the shared kamal-proxy). `bin/prod` wraps Kamal and loads `.env.production`
 (gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
-`ADMIN_PASSWORD` (the /forms login). SQLite lives in the `lyndbergh_platform_storage` volume and a
+`ADMIN_PASSWORD` (the login for every page; the API stays open). SQLite lives in the `lyndbergh_platform_storage` volume and a
 nightly job copies it to `storage/backups` (14 days kept).
 
 ```bash

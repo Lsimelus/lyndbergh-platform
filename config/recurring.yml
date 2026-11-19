@@ -16,6 +16,9 @@ production:
   check_sites:
     class: CheckSitesJob
     schedule: every 5 minutes
+  backup_database:
+    class: BackupDatabaseJob
+    schedule: at 3am every day
 
 development:
   check_sites:

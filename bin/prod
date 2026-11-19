@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Everyday production tasks in one command. Loads .env.production (gitignored) so Kamal has its secrets.
+#   bin/prod deploy                    ship the current commit
+#   bin/prod rollback <version>        go back (versions: bin/prod kamal app containers)
+#   bin/prod logs                      follow the app's logs
+#   bin/prod console                   Rails console on production
+#   bin/prod import-contacts <file>    load old contact messages (JSON array) into production
+#   bin/prod health                    check https://platform.lyndbergh.net/up
+#   bin/prod kamal <args>              any other Kamal command
+set -euo pipefail
+cd "$(dirname "$0")/.."
+[ -f .env.production ] || { echo "missing .env.production (see .kamal/secrets)" >&2; exit 1; }
+set -a; . ./.env.production; set +a
+kamal() { bundle exec kamal "$@"; }
+
+case "${1:-help}" in
+  deploy)          kamal deploy ;;
+  rollback)        kamal rollback "${2:?version, from: bin/prod kamal app containers}" ;;
+  logs)            kamal app logs -f ;;
+  console)         kamal console ;;
+  import-contacts) file="${2:?JSON file}"
+                   container=$(ssh "root@$KAMAL_HOST" "docker ps -q -f label=service=lyndbergh-platform -f label=role=web | head -1")
+                   ssh "root@$KAMAL_HOST" "docker exec -i $container bin/rails contact_messages:import" < "$file" ;;
+  health)          curl -fsS https://platform.lyndbergh.net/up && echo ;;
+  kamal)           shift; kamal "$@" ;;
+  *)               sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//' ;;
+esac

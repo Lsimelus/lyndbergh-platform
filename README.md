@@ -17,7 +17,6 @@ A walkthrough of what I've built: what each project does, how it's put together,
 | [abchealth-swiftapp](#abchealth-swiftapp) | ABChealth is a supportive wellness-community iOS app: set and track health goals, share your journey in posts, and connect with others, with gentle check-ins instead of pressure. | [repo (private)](https://github.com/Lsimelus/abchealth-swiftapp) |
 | [playlist-video-converter](#playlist-video-converter) | Paste an Apple Music playlist link and get back a YouTube Music playlist of the songs' official music videos only. | local only |
 | [fastapi-postgres](#fastapi-postgres) | The original Real Calc API: location ranking, geocoding, saved calculations and magic-link email login. | [repo (private)](https://github.com/Lsimelus/fastapi-postgres) |
-| [real-calc-client](#real-calc-client) | The Real Calc frontend: a guided questionnaire that computes monthly payment (PITI + PMI) for Conventional, FHA, VA and USDA loans, plus equity, interest and rent-vs-buy charts, and a Location Explorer that ranks real cities within budget with a details view per city. | [repo (private)](https://github.com/Lsimelus/real-calc-client) · [live](https://real-calc-client-blush.vercel.app) |
 | [abchealth-expressjs](#abchealth-expressjs) | The ABChealth landing site and members backend: launch sign-up, Google sign-in, a publisher role that can run and review the members email job, and the /privacy and /terms pages the App Store listing points to. | [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app) |
 | [Portfolio](#portfolio) | My personal site: about, resume (PDF viewer), project gallery with videos, and a contact form that posts to my FastAPI backend and stores messages in Postgres. | [repo](https://github.com/Lsimelus/Portfolio) · [live](https://www.lyndbergh.net) |
 | [lyndbergh-platform](#lyndbergh-platform) | A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. | [repo](https://github.com/Lsimelus/lyndbergh-platform) |
@@ -28,11 +27,8 @@ A walkthrough of what I've built: what each project does, how it's put together,
 flowchart LR
   subgraph realcalc["Real Calc"]
     rc["real-calc<br/>Rails modular monolith + React SPA"]
-    rcc["real-calc-client<br/>Next.js (being replaced)"]
     fp["fastapi-postgres<br/>FastAPI (being replaced)"]
-    rcc -->|location + mortgage APIs| fp
     rc -.->|replaces| fp
-    rc -.->|replaces| rcc
   end
   subgraph abc["ABChealth"]
     ios["abchealth-swiftapp<br/>SwiftUI"] --> supa[("Supabase<br/>auth + Postgres")]
@@ -280,41 +276,6 @@ Min-max normalize each of the ten factors across the cities that pass the budget
 
 **Future iterations:** Superseded by real-calc
 
-### real-calc-client
-
-*2024-04 → 2026-09 · Main contributor (168 commits)* · [repo (private)](https://github.com/Lsimelus/real-calc-client) · [live](https://real-calc-client-blush.vercel.app)
-
-**Status:** Live on Vercel; being replaced by the SPA inside real-calc
-
-> The Real Calc frontend: a guided questionnaire that computes monthly payment (PITI + PMI) for Conventional, FHA, VA and USDA loans, plus equity, interest and rent-vs-buy charts, and a Location Explorer that ranks real cities within budget with a details view per city.
-
-**Stack:** Next.js 15, React 19 (React Compiler), TypeScript, Redux Toolkit, Tailwind, shadcn/ui (Radix), Recharts, Jest, Playwright
-
-**Architecture.** Redux slices (userInput / location / progress) drive the summary card and charts. All payment and amortization math runs in the browser. Only the Location Explorer and city details call the API.
-
-**Key decisions**
-
-- **Do the math on the client.** Instant feedback and no server cost. *Trade-off:* Later the AI advisor needed the same math on the server, and porting it found a ~30% property-tax bug (see real-calc ADR 0011).
-- **Next.js → plain React SPA in the rebuild.** The app used almost nothing server-side from Next (one page, metadata, fonts). *Trade-off:* No server-side rendering, which this app doesn't need.
-
-**Numbers**
-
-- 168 commits
-- Jest unit tests plus Playwright end-to-end tests
-
-**Hard parts**
-
-- Keeping a long questionnaire's state consistent: Redux slices plus a progress slice.
-
-<details><summary>Likely questions</summary>
-
-**Why Redux here?**  
-Many questionnaire steps feed several charts at once. One store with typed slices made the data flow easy to follow and test.
-
-</details>
-
-**Future iterations:** Superseded by gems/real_calc_web in real-calc
-
 ### abchealth-expressjs
 
 *2025-11 → 2026-09 · Engineer* · [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app)
@@ -373,7 +334,7 @@ Many questionnaire steps feed several charts at once. One store with typed slice
 
 - The contact backend has moved three times (Render Node → Flask → FastAPI), each time behind the same form.
 
-**Future iterations:** Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired
+**Future iterations:** Move off CRA (deprecated) to Vite; Point the contact form at lyndbergh-platform, then retire fastapi-postgres
 
 ### lyndbergh-platform
 
@@ -414,7 +375,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Future iterations:** Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
+**Future iterations:** Deploy it with Kamal on the same VPS as real-calc, with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
 
 ## Story bank
 
@@ -483,17 +444,17 @@ What I'm working on now, what's next, and where each project goes from here.
 | [abchealth-swiftapp](#abchealth-swiftapp) | Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild |
 | [playlist-video-converter](#playlist-video-converter) | git init and push, then CI; A golden set of playlists to measure precision and recall |
 | [fastapi-postgres](#fastapi-postgres) | Superseded by real-calc |
-| [real-calc-client](#real-calc-client) | Superseded by gems/real_calc_web in real-calc |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
-| [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at real-calc or a small serverless function after the FastAPI app is retired |
-| [lyndbergh-platform](#lyndbergh-platform) | Deploy it on a host separate from real-calc's AWS account (Render recommended), with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
+| [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at lyndbergh-platform, then retire fastapi-postgres |
+| [lyndbergh-platform](#lyndbergh-platform) | Deploy it with Kamal on the same VPS as real-calc, with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
 
 ## Archive
 
-<details><summary>23 older, school and superseded repos</summary>
+<details><summary>24 older, school and superseded repos</summary>
 
 | Repo | When | What | Stack |
 |---|---|---|---|
+| [real-calc-client](https://github.com/Lsimelus/real-calc-client) | 2024-04 → 2026-09 | The Real Calc frontend: a guided questionnaire that computes monthly payment (PITI + PMI) for Conventional, FHA, VA and USDA loans, plus equity, interest and rent-vs-buy charts, and a Location Explorer that ranks real cities within budget with a details view per city. | Next.js 15, React 19 (React Compiler), TypeScript, Redux Toolkit, Tailwind, shadcn/ui (Radix), Recharts, Jest, Playwright |
 | [Marhaban](https://github.com/Lsimelus/Marhaban) | 2025 | Website for a non-profit: news feed from NewsAPI, contact form saved to MongoDB. The backend lived on a separate branch to keep secrets out of the public repo. *Building for a real non-profit client.* | TypeScript, React, Tailwind, Node.js, MongoDB, NewsAPI, Vercel |
 | [lyndbergh_net](https://github.com/Lsimelus/lyndbergh_net) | 2025 | A mobile (Expo) version of my personal site. | TypeScript, React Native (Expo) |
 | [flask-backend](https://github.com/Lsimelus/flask-backend) | 2025 | The earlier backend for real-calc-client and Portfolio. A script generated a CSV of real-estate data that served as the database. *The step between RenderComAPI and fastapi-postgres.* | Python, Flask, MongoDB, Vercel |
@@ -552,6 +513,21 @@ bin/rails test
 Run one round of checks by hand: `bin/rails runner CheckSitesJob.perform_now`.
 Add a site by adding an entry to `config/sites.yml`.
 
+### Production
+
+It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzner VPS as real-calc
+(its own container behind the shared kamal-proxy). `bin/prod` wraps Kamal and loads `.env.production`
+(gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
+`ADMIN_PASSWORD` (the /forms login). SQLite lives in the `lyndbergh_platform_storage` volume and a
+nightly job copies it to `storage/backups` (14 days kept).
+
+```bash
+bin/prod deploy                     # ship the current commit
+bin/prod logs                       # follow the logs
+bin/prod import-contacts old.json   # load old contact messages (safe to re-run)
+bin/prod health
+```
+
 ### Local ports
 
 Each repo has its own port so they can all run at once.
@@ -561,7 +537,6 @@ Each repo has its own port so they can all run at once.
 | real-calc | 3000 (Vite 3036, end-to-end tests 3110) |
 | abchealth-expressjs | 3001 |
 | Portfolio | 3002 |
-| real-calc-client | 3003 |
 | lyndbergh-platform | 3004 |
 | playlist-video-converter | 3100 (Rails UI), 8787 (server), 8788 (CLI sign-in) |
 | fastapi-postgres | 8000 |
@@ -569,7 +544,8 @@ Each repo has its own port so they can all run at once.
 
 ### TODO
 
-- [ ] Deploy it with Kamal on the same VPS as real-calc, with daily SQLite backups and a healthchecks.io heartbeat (so a dead server still alerts me), and add it to the Portfolio.
+- [ ] Deploy it with Kamal on the same VPS as real-calc (config, nightly SQLite backups and `bin/prod` are ready; first deploy pending).
+- [ ] A healthchecks.io heartbeat so a dead server still alerts me, and add it to the Portfolio.
 - [ ] PR-review agents on the Anthropic API (Managed Agents), after real-calc's advisor ships with its eval.
 - [ ] Alert when a site goes from up to down (email or a webhook).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.

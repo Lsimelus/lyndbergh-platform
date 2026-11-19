@@ -16,12 +16,6 @@
   expect: json
   traffic: https://realcalc.lyndbergh.net/admin/telemetry
 
-- slug: real-calc-client
-  name: Real Calc client (legacy)
-  url: https://real-calc-client-blush.vercel.app
-  repo: Lsimelus/real-calc-client
-  traffic: https://vercel.com/d?to=%2F%5Bteam%5D%2Freal-calc-client%2Fanalytics&title=Open+real-calc-client+analytics
-
 - slug: abchealth
   name: ABCHealth
   url: https://abchealth-expressjs.vercel.app

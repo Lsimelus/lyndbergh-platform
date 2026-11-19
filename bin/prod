@@ -11,6 +11,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 [ -f .env.production ] || { echo "missing .env.production (see .kamal/secrets)" >&2; exit 1; }
 set -a; . ./.env.production; set +a
+# Use the server's Docker over SSH, so deploys don't depend on Docker Desktop on this Mac.
+export DOCKER_HOST="${DOCKER_HOST:-ssh://root@$KAMAL_HOST}"
 kamal() { bundle exec kamal "$@"; }
 
 case "${1:-help}" in

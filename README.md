@@ -1,356 +1,15 @@
 # Lyndbergh Platform
 
-My projects in one place, plus the small Rails app behind them: it monitors every site and holds the endpoints they share.
+My roadmap, plus the small Rails app behind my sites: it monitors every site and holds the endpoints they share.
 
-- **[Projects](#projects):** a walkthrough of each project: what it does, how it's built, the decisions and trade-offs, and the questions I'd expect about it.
+- **[Roadmap](#roadmap):** what I'm working on now and what's next across my projects.
 - **[Platform app](#platform-app):** this repo's Rails app: the site monitor, plus the contact form and feedback endpoints every site shares.
 
 <!-- walkthrough:start -->
 
-## Projects
-
-A walkthrough of what I've built: what each project does, how it's put together, and the decisions behind it. Most repos are private, so this page is the tour; ask me for access to any of them.
-
-| Project | What it is | Links |
-|---|---|---|
-| [real-calc](#real-calc) | Real Calc helps home buyers answer two questions: what can I afford, and where should I look. | [repo (private)](https://github.com/Lsimelus/real-calc) · [live](https://realcalc.lyndbergh.net) |
-| [abchealth-swiftapp](#abchealth-swiftapp) | ABChealth is a supportive wellness-community iOS app: set and track health goals, share your journey in posts, and connect with others, with gentle check-ins instead of pressure. | [repo (private)](https://github.com/Lsimelus/abchealth-swiftapp) |
-| [playlist-video-converter](#playlist-video-converter) | Paste an Apple Music playlist link and get back a YouTube Music playlist of the songs' official music videos only. | [repo (private)](https://github.com/Lsimelus/playlist-video-converter) |
-| [abchealth-expressjs](#abchealth-expressjs) | The ABChealth landing site and members backend: launch sign-up, Google sign-in, a publisher role that can run and review the members email job, and the /privacy and /terms pages the App Store listing points to. | [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app) |
-| [Portfolio](#portfolio) | My personal site: about, resume (PDF viewer), project gallery with videos, and a contact form that posts to my FastAPI backend and stores messages in Postgres. | [repo](https://github.com/Lsimelus/Portfolio) · [live](https://www.lyndbergh.net) |
-| [lyndbergh-platform](#lyndbergh-platform) | A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. | [repo](https://github.com/Lsimelus/lyndbergh-platform) · [live](https://platform.lyndbergh.net) |
-
-### How they connect
-
-```mermaid
-flowchart LR
-  subgraph realcalc["Real Calc"]
-    rc["real-calc<br/>Rails modular monolith + React SPA"]
-  end
-  subgraph abc["ABChealth"]
-    ios["abchealth-swiftapp<br/>SwiftUI"] --> supa[("Supabase<br/>auth + Postgres")]
-    web["abchealth-expressjs<br/>landing + members"]
-  end
-  subgraph pvc["Playlist converter"]
-    ui["Rails UI"] --> conv["FastAPI converter"] --> ytm["YouTube Music"]
-  end
-  pf["Portfolio<br/>lyndbergh.net"] -->|contact form| plat["lyndbergh-platform<br/>Rails + SQLite"]
-```
-
-## Featured
-
-### real-calc
-
-*2026-11 → now · Solo engineer: architecture, backend, frontend, infra* · [repo (private)](https://github.com/Lsimelus/real-calc) · [live](https://realcalc.lyndbergh.net)
-
-**Status:** Live at https://realcalc.lyndbergh.net since 2026-11-18 on a Hetzner VPS (Kamal, Postgres on the server with nightly backups). Moved off AWS after an account-level ECS block (decision 0013). Advisor built, off until a Qwen host is chosen.
-
-> Real Calc helps home buyers answer two questions: what can I afford, and where should I look. It's a mortgage calculator plus a location explorer that ranks US cities 0–100 on ten factors (affordability, growth, rental yield, tax, crime, disaster risk and more) using Zillow, FRED, FEMA, FBI and Census data. I rebuilt it from a FastAPI backend plus a Next.js client into one Rails modular monolith that serves the React SPA, and it deploys to AWS (ECS Fargate, RDS) through Terraform and GitHub Actions with OIDC.
-
-**Stack:** Rails 8.1, Ruby 4.0, Packwerk, Grape, Solid Queue, PostgreSQL (RDS), React 19 + Vite, Terraform, AWS ECS Fargate, GitHub Actions (OIDC), Bedrock (planned)
-
-**Architecture.** One Rails 8.1 app, deployed as one container on AWS ECS Fargate with Postgres on RDS. It serves the JSON API, the React frontend and background jobs. The code is split into 13 components whose boundaries Packwerk enforces. Market data from Zillow, Redfin, FHFA, FRED, FEMA, FBI and Census is refreshed monthly by GitHub Actions, and every value records its source.
-
-<details><summary>Component map (13 Packwerk components)</summary>
-
-```mermaid
-flowchart TD
-  accounts["accounts"]
-  contact["contact"]
-  envelope(["envelope"])
-  identity["identity"]
-  location_advisor["location_advisor"]
-  locations["locations"]
-  market_data["market_data"]
-  mortgage_math(["mortgage_math"])
-  notifications["notifications"]
-  operations["operations"]
-  plans["plans"]
-  public_data_apis(["public_data_apis"])
-  session_tokens(["session_tokens"])
-  accounts --> session_tokens
-  contact --> session_tokens
-  identity --> session_tokens
-  identity --> accounts
-  location_advisor --> session_tokens
-  location_advisor --> locations
-  location_advisor --> accounts
-  location_advisor --> mortgage_math
-  location_advisor --> market_data
-  locations --> market_data
-  locations --> public_data_apis
-  notifications --> session_tokens
-  operations --> market_data
-  operations --> notifications
-  plans --> session_tokens
-  plans --> locations
-```
-
-Arrows point to what a component may call; Packwerk enforces them (no cycles). Rounded boxes are utilities. `envelope` is left out: 9 components use it.
-
-</details>
-
-**Key decisions**
-
-- **Modular monolith with Packwerk instead of microservices (ADR 0001).** The old backend was a 1,800-line main.py plus a 1,800-line csv_utils.py. I wanted clear boundaries without the cost of running several services as a solo developer. *Trade-off:* Boundaries are checked statically, not by the network, so discipline still matters. Splitting out a service later is straightforward because each component already has a public interface.
-- **Keep the FastAPI API contract exactly (ADR 0002).** Same paths, status codes and {data, meta, error} envelope, quirks included, so the switch-over is invisible to clients. The Python test suite was ported as request specs to pin the contract down. *Trade-off:* Some odd behaviour stays on purpose (validation failures return 200 with an error envelope).
-- **Move market data from CSV files into Postgres (ADR 0004).** FastAPI re-read 25 MB of CSV/JSON on every request, and two files turned out to be wrong (a saved 404 page and a stale copy). Jobs now load the data inside a transaction, reject files under 10 KB and HTML error pages, and precompute factors. *Trade-off:* More moving parts (jobs and a refresh schedule) in exchange for fast, queryable, validated data.
-- **Solid Queue inside Puma (ADR 0007).** Emails used to be FastAPI BackgroundTasks, which were lost on restart and never retried. A Postgres-backed queue needs no Redis and runs in the same container. *Trade-off:* Jobs share CPU with web requests. The scale-out plan is a second Fargate service from the same image with SOLID_QUEUE_IN_PUMA=false.
-- **AWS Fargate + RDS + Terraform, deploys through GitHub OIDC (ADR 0008).** Managed containers, everything in code, and no long-lived AWS keys in GitHub. *Trade-off:* Costs more and takes more setup than Vercel, but it is real production infrastructure I can reason about.
-- **Do the calculator math on the server (ADR 0011).** The planned AI advisor tools need the same math as the calculator. Porting it found two frontend bugs, including property tax under-stated by about 30%. *Trade-off:* The math now has to stay in sync between client and server.
-- **Google is the only sign-in (ADR 0012).** One familiar way in, no email provider just for codes. Sign-in gates the advisor, saving your plan and feedback; everything else stays open. *Trade-off:* People without a Google account can't sign in; CSP and OAuth setup needed care (form-action had to allow accounts.google.com).
-- **One AWS account per app under Organizations + Identity Center.** Contained blast radius, per-app costs, clean teardown; short-lived credentials with MFA instead of IAM users or root. *Trade-off:* More setup up front, and new organizations start with a low account quota.
-- **Fill data gaps from city/county data, and record the source.** Zillow metro files covered only ~47% of places; town/county Zillow and FHFA data lifted growth to 92% and rent to 66%. data_basis says where each value came from. *Trade-off:* Scores no longer match the old Python app for places that had no data, so the parity check was retired.
-- **Tests can never call a model.** In the test environment Bedrock points at a .invalid host with fake credentials, WebMock blocks the network, and any request to AWS or Anthropic fails the spec. *Trade-off:* The eval suite that calls the real model has to be a separate, deliberate run.
-- **Stopgap: deploy into the Organization's management account.** The Organizations account quota is 1, so the real-calc member account can't be created yet. The Terraform reads the account from the caller, so only the profile changed. On 2026-11-18 AWS declined to raise it (limited usage history), so the stopgap stays until I can re-request. *Trade-off:* Breaks my own one-account-per-app rule: SCPs don't apply to the management account, and moving later means an RDS snapshot copy, new cert and DNS swap.
-- **Stay on AWS instead of a $6 VPS (2026-11-13).** I priced the alternatives (AWS ~$65-70/month, VPS + Kamal + Neon ~$6-12, Vercel split) and built the VPS setup, then chose AWS for production-grade infrastructure and the hands-on experience employers ask for. *Trade-off:* About $60 a month more with no users yet, plus account friction (quota, ECS block).
-- **Trust GitHub's immutable OIDC subject.** The repo's tokens say repo:Lsimelus@45671470/real-calc@1442215665:..., so trust policies match owner and repo IDs. A renamed or re-created repo can't assume the roles. *Trade-off:* The subject is less readable; the variable documents how to look it up with gh api.
-- **Off AWS to one Hetzner VPS with Kamal (2026-11-18).** AWS blocked ECS for the account for a week and denied the account-quota increase. A ~$7/month VPS runs the same container with Rails 8's own deploy tool, and the first deploy took 4 minutes. *Trade-off:* I run the server myself (updates, backups), and the server is in Finland, so HUD's API (US-only) is fetched on my Mac yearly and uploaded as a file.
-
-**Numbers**
-
-- 12 Packwerk components (+ plans), 0 dependency cycles
-- 33 spec files (121 examples) + 139 frontend tests; tests can never call a model
-- 12 ADRs
-- Data coverage after gap filling: growth 47% → 92%, rent 47% → 66% of 29,717 places
-- 25 MB of CSV per request → Postgres tables, refreshed monthly by GitHub Actions
-- AI advisor: 15 read-only tools (4 admin-only), per-user token budgets, 20 turns/hour
-- Deploy: CI → ECR → migrate as a one-off task → rolling ECS update with /health check
-- Production data measured 2026-11-13: 570 MB right after the load, 211 MB after VACUUM FULL (Neon free cap 0.5 GB)
-- Hosting cost compared: AWS ~$65-70/month running (~$27 idle) vs VPS + Neon ~$6-12
-- Production coverage after the first load: every ranking factor above 92% (rental yield 99.3%, safety 98.2%, tax 95.1%) across 29,717 places
-
-**Hard parts**
-
-- Rebuilding without changing user-visible behaviour: contract specs plus a parity task against recorded Python outputs.
-- Bad data in production: a saved 404 page was being served as a dataset. Fixed with validation on load and transactional refreshes.
-- macOS libpq GSSAPI isn't fork-safe, and Solid Queue forks, so boot.rb sets PGGSSENCMODE=disable.
-- First deploy: every GitHub OIDC login was denied. CloudTrail showed the real token subject used immutable IDs (owner@id/repo@id), not owner/repo; changed the trust policies and applied.
-- AWS returned BlockedException ('Your account is currently blocked') for every ECS RunTask and service placement while RDS, ALB, ECR and ACM all worked. Only AWS Support can lift it; I stopped RDS to cut idle cost and re-planned hosting.
-- Re-running a deploy failed at docker push because ECR tags are immutable; the workflow now skips the build when the commit's image already exists (ecr:BatchGetImage, no new IAM).
-- The CI Terraform plan step had been failing silently: the plan role couldn't write the S3 lock file, and '| tee' hid the exit code.
-
-<details><summary>Likely questions</summary>
-
-**Why not microservices?**  
-One developer, one domain, low traffic. A modular monolith gives me boundaries (Packwerk) and one thing to deploy, monitor and roll back. Each component already has a public interface, so extracting one later is mechanical.
-
-**How do you deploy and roll back?**  
-Merging to main runs CI, builds the image, tags it with the commit SHA, runs migrations as a one-off ECS task, then does a rolling update with an ALB health check. To roll back I point the service at the previous task definition. Migrations are additive by convention, so the old image keeps working.
-
-**How did you make sure the rewrite didn't break anything?**  
-I froze the contract with request specs ported from the Python suite and checked the ranking engine against recorded outputs (21/21). The cutover plan is to rehearse the data port against Neon first, then run it for real just before switching DNS.
-
-**How would you scale it?**  
-Fargate scales the web tier horizontally. Jobs can move to their own service from the same image. Per-city factors are already precomputed, and read-heavy endpoints could be cached. RDS is the next limit, and read replicas would come before anything fancier.
-
-**Why not Vercel?**  
-Vercel runs front ends and short serverless functions. Real Calc is a Rails monolith with background jobs and a ten-minute monthly refresh, so I'd have had to split the app and still host Rails somewhere else.
-
-**Isn't AWS overkill for an app with no users?**  
-On cost alone, yes: a $6 VPS with Kamal and Neon runs the same image, and I built that setup as a fallback. I chose AWS because I wanted production-grade infrastructure in code, OIDC deploys with no stored keys, and room to add Bedrock for the advisor, and I accepted about $60 a month for it.
-
-</details>
-
-**Future iterations:** Get AWS Support to lift the ECS block, start RDS, deploy and run the first data load; Turn on the advisor (Bedrock) and run the eval suite; Redfin and HUD data to fill the remaining metro-only gaps; Runbook drills: restore the database from a snapshot
-
-### abchealth-swiftapp
-
-*2025-11 → now · Engineer for a two-founder wellness startup* · [repo (private)](https://github.com/Lsimelus/abchealth-swiftapp)
-
-**Status:** Pre-launch: prod Supabase by 2026-12-31, App Store launch planned 2027-02-08
-
-> ABChealth is a supportive wellness-community iOS app: set and track health goals, share your journey in posts, and connect with others, with gentle check-ins instead of pressure. I'm building the SwiftUI app on Supabase (auth and Postgres) and the schema behind it, including the safety features the App Store requires for user-generated content.
-
-**Stack:** Swift 5.9, SwiftUI, iOS 26 (iPhone only), MVVM, Supabase Swift SDK 2.37, PostgreSQL, TestFlight (planned), Sentry (planned)
-
-**Architecture.** Feature modules (Goals, Home, Social, Sharing, Search, Create, Activity, Profile, Authentication), each split into Views / ViewModels / Services / Models, with a shared Supabase client. The database is 8 ordered SQL files: users and goals, social, content and news, sharing, notifications, and safety (reports, blocks, account deletion), with row-level security policies. Community features sit behind an AppConfiguration flag.
-
-**Key decisions**
-
-- **Supabase instead of a custom backend.** Auth, Postgres, storage and realtime with no servers to run, for a small team. *Trade-off:* Vendor lock-in, and security lives in RLS policies that have to be right.
-- **Community features behind a flag.** Lets us launch private-first and turn social on once moderation is ready (launch options A/B/C). *Trade-off:* Two code paths to test.
-- **Safety schema applied last and required.** Apple requires report, block and account-deletion features for apps with user-generated content. It also fixes a trigger that crossed between users. *Trade-off:* Adds to the launch scope.
-
-**Numbers**
-
-- 49 Swift files
-- 8 SQL schema files, 6 with RLS policies
-- Launch plan: Apple account from 2027-01-01, submit 2027-02-02
-
-**Hard parts**
-
-- A duplicate UserProfile model broke the build; fixed by keeping one canonical definition.
-- Ordering 8 schema migrations; checked against Postgres 18 with a stubbed auth schema.
-
-<details><summary>Likely questions</summary>
-
-**How do you secure user data with Supabase?**  
-Row-level security on every user table, so the client can only read or write its own rows, plus explicit report, block and deletion flows. The anon key is public by design. The policies are the real security boundary.
-
-**How are you de-risking the launch?**  
-Production Supabase and auth go live first, with a full simulator test against prod. Then TestFlight, crash reporting and unit tests on the date decoder and GoalsViewModel before submitting.
-
-</details>
-
-**Future iterations:** Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild
-
-### playlist-video-converter
-
-*2026 → now · Solo* · [repo (private)](https://github.com/Lsimelus/playlist-video-converter)
-
-**Status:** Building, due 2027-01-31
-
-> Paste an Apple Music playlist link and get back a YouTube Music playlist of the songs' official music videos only. No lyric videos, audio uploads, covers or live versions, and no repeats. Songs without an official video are listed instead of being matched badly.
-
-**Stack:** Python, FastAPI, ytmusicapi, rapidfuzz, httpx, pydantic, diskcache, Google OAuth (device flow), pytest
-
-**Architecture.** Reads the public Apple Music page's embedded JSON (no Apple API key needed) → searches YouTube Music 4 songs at a time → scores each candidate → removes duplicates → creates a private playlist through OAuth. Accepted matches are cached for 30 days. A web UI (server.py on localhost) and a CLI share the same engine.
-
-**Key decisions**
-
-- **A scoring model with hard caps instead of 'take the top result'.** Points for title similarity (45), artist match (25/18), official video (20), duration (10) and views (5), minus penalties for remix, live and so on. Anything that isn't an official video is capped below the 55-point threshold. *Trade-off:* Precision over recall: some songs are left out, by design.
-- **Scrape the public page instead of the Apple Music API.** No developer token needed. *Trade-off:* Limited to the first 300 tracks, and it breaks if Apple changes its markup.
-
-**Numbers**
-
-- ~45 s for 300 songs
-- Acceptance threshold 55/100
-- Tests: Apple Music parser and matcher
-
-**Hard parts**
-
-- Apple masks explicit titles (e.g. 'P***y is Mine'), so matching had to handle masked titles.
-- A 300-song playlist in about 45 s with 4 searches running at once and no API quota.
-
-<details><summary>Likely questions</summary>
-
-**How do you test a fuzzy matcher?**  
-Fixed cases for the tricky ones (masked titles, remixes, lyric videos, artist-channel 'Official Video'), with the score breakdown saved in -o results.json so I can see why a match was accepted or rejected.
-
-</details>
-
-**Future iterations:** git init and push, then CI; A golden set of playlists to measure precision and recall
-
-## Supporting
-
-### abchealth-expressjs
-
-*2025-11 → 2026-09 · Engineer* · [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app)
-
-**Status:** Live
-
-> The ABChealth landing site and members backend: launch sign-up, Google sign-in, a publisher role that can run and review the members email job, and the /privacy and /terms pages the App Store listing points to.
-
-**Stack:** Node.js, Express 4, Passport (Google OAuth 2.0), PostgreSQL, connect-pg-simple sessions, node-cron, Tailwind, Jest + supertest, Vercel
-
-**Architecture.** Express serves static pages and JSON routes. Sessions are stored in Postgres (30-day httpOnly cookies, secure in production). A requireRole middleware returns 401 vs 403 correctly. A daily cron job logs a row per run to abc_email_jobs, and publishers can also trigger it by hand. Referrer capture records where sign-ups come from.
-
-**Key decisions**
-
-- **Sessions in Postgres instead of JWT.** Revocable, simple, and it reuses the database we already have. *Trade-off:* One database read per request.
-- **Stub the email job but build its plumbing first.** Scheduling, the manual trigger and run history can be tested before choosing an email provider. *Trade-off:* No real emails go out yet.
-
-**Numbers**
-
-- 7 test files (auth, roles, email job, legal, referrer, publisher)
-
-**Hard parts**
-
-- Cron on a serverless host: an in-process schedule needs a long-running process, so a platform cron would be the next step.
-
-<details><summary>Likely questions</summary>
-
-**401 or 403?**  
-401 means we don't know who you are (sign in). 403 means we know who you are and you're not allowed. requireRole returns each one in the right case, and both are tested.
-
-</details>
-
-**Future iterations:** Logging and uptime checks; Move the cron to Vercel Cron
-
-### Portfolio
-
-*2023-02 → now · Solo* · [repo](https://github.com/Lsimelus/Portfolio) · [live](https://www.lyndbergh.net)
-
-**Status:** Live
-
-> My personal site: about, resume (PDF viewer), project gallery with videos, and a contact form that posts to my FastAPI backend and stores messages in Postgres.
-
-**Stack:** React 18, TypeScript, Vite, MUI, styled-components, axios, Vercel
-
-**Architecture.** A single-page app with scroll navigation. All content lives in src/data/data.tsx. The contact form POSTs to /api/contact-form on the FastAPI backend.
-
-**Key decisions**
-
-- **Keep content in one data file.** Updating the site means editing one file, not components. *Trade-off:* Not a CMS, so only I can edit it.
-
-**Numbers**
-
-- 67 commits since 2023
-
-**Hard parts**
-
-- The contact backend has moved three times (Render Node → Flask → FastAPI), each time behind the same form.
-
-### lyndbergh-platform
-
-*Nov 2026 · Solo: design, build, CI* · [repo](https://github.com/Lsimelus/lyndbergh-platform) · [live](https://platform.lyndbergh.net)
-
-**Status:** Live at https://platform.lyndbergh.net since 2026-11-18 (Kamal, same VPS as real-calc)
-
-> A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. I run sites across Rails, Express, FastAPI and Vercel and had no single place that told me which were up. The first run caught a real bug: my ABCHealth API URL was returning the static HTML page with a 200, so a plain uptime check would have called it healthy. I check that APIs answer in JSON, which caught it. It also holds the endpoints my sites share (the contact form and feedback), and its README is the public walkthrough of all my projects.
-
-**Stack:** Ruby 4, Rails 8, SQLite, Solid Queue, Minitest, GitHub Actions
-
-**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites. The status page and the two API endpoints are public; /forms is behind an admin login. The /forms page lists contact messages with a Reply link and shows feedback by site: average rating, the 1-5 spread and recent comments.
-
-**Key decisions**
-
-- **Sites in YAML, not a table.** Four to eight sites that change rarely; editing a file in a PR is reviewable and needs no admin UI. *Trade-off:* Adding a site needs a deploy.
-- **Check for JSON instead of full OpenAPI validation.** I first validated health responses against each service's OpenAPI spec, then cut it: it needed vendored specs, Redocly and codegen for four endpoints. `expect: json` catches the same deploy failure in five lines. *Trade-off:* It won't catch a JSON response with the wrong shape.
-- **Rails 8 + SQLite + Solid Queue.** One process, one file database, built-in recurring jobs: nothing extra to host. *Trade-off:* Single server; fine for a personal monitor.
-- **Two tables for contact messages and feedback, not one.** I drafted one form_entries table, but almost every rule became 'unless it's feedback'. Contact messages need every field and get a reply; feedback is often anonymous, has a 1-5 rating and is read in bulk. *Trade-off:* Two endpoints and tables instead of one; shared rules live in an abstract Submission model so they aren't duplicated.
-- **Shared endpoints live in the platform, not in a product.** Portfolio messages are personal, not Real Calc's, and shouldn't depend on Real Calc's hosting. *Trade-off:* The platform has to stay up for every site's forms, so it needs its own host and backups.
-
-**Numbers**
-
-- Checks every 5 minutes, keeps 30 days of history
-- Caught a production misdeploy (HTML served at an API health URL) on the first run
-
-**Hard parts**
-
-- Cutting scope: started as a 'software factory' with shared API contracts, Swift and TypeScript codegen and scaffolders, then trimmed it to the part that had a real user.
-
-<details><summary>Likely questions</summary>
-
-**Why build this instead of using UptimeRobot?**  
-A hosted pinger only knows a URL returned 200. Mine knows each site's repo, CI and expected response, so it caught an API that returned 200 with an HTML page. It's also a small, complete Rails 8 app I can talk through end to end.
-
-**What would you add next?**  
-Alerts on an up-to-down transition, then moving my Portfolio's contact form backend here so the forms page reads from its own database.
-
-</details>
-
-**Future iterations:** PR review agents
-
-## Story bank
-
-Behavioral prompts mapped to real moments in these projects.
-
-| Prompt | Project | What happened |
-|---|---|---|
-| Tell me about a large migration or rewrite | real-calc | FastAPI + Next.js → Rails modular monolith. Risk: changing results users can see. Action: froze the contract with ported request specs and checked ranking parity against recorded Python outputs (21/21). Result: one deployable, 12 enforced components, data in Postgres instead of 25 MB of CSV per request. |
-| A bug you found that others missed | real-calc | Porting the calculator math to the server showed property tax was under-stated by about 30% in the frontend: an annual percent was being treated wrongly. I wrote it up in ADR 0011 and fixed it on both sides. |
-| A production data incident | real-calc / fastapi-postgres | A saved 404 HTML page was being served as a dataset. I added load-time validation (reject under 10 KB or HTML) and transactional refreshes, so a bad file can never replace good data. |
-| A trade-off you made | playlist-video-converter | Precision over recall: the matcher caps anything that isn't an official video below the acceptance threshold, so songs get left out instead of matched wrongly. Users would rather see a short list of correct videos than a padded one. |
-| Working with non-technical stakeholders | ABChealth | Two founders, three launch options (open community / circles / private-first). I put community features behind a flag so they can choose late without a rewrite, and laid out the launch plan around Apple's requirements. |
-| Security / auth design | abchealth-expressjs / ABChealth | Postgres-backed revocable sessions, httpOnly cookies that are secure in production, requireRole returning 401 vs 403 correctly (with tests), and Supabase RLS on every user table. |
-| Tell me about a time you changed direction | real-calc | Built full AWS infra in Terraform and applied it, then hit an account-level ECS block. I priced the alternatives (AWS $65-70, Vercel split, VPS + Neon ~$6), measured the data against Neon's free cap, and built a working Kamal setup as a fallback. Then I made the call to stay on AWS for production-grade infrastructure, with the fallback ready if the block drags on. |
-| Debugging something you didn't understand at first | real-calc | GitHub Actions couldn't assume any AWS role. The trust policies looked right, so I went to CloudTrail, which showed the token's actual subject used GitHub's immutable owner/repo IDs. Matched the policy to it, applied, and the next run logged in and pushed the image. |
-
 ## Roadmap
 
-What I'm working on now, what's next, and where each project goes from here.
+What I'm working on now and what's next.
 
 ### In progress
 
@@ -359,82 +18,33 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Up next
 
-- [ ] Finish the move off AWS: set the GitHub secrets so the Market data workflow refreshes over SSH (then test it), switch real-calc's deploy workflow from ECS to Kamal and merge deploy/kamal-vps into main, turn on Hetzner Backups and attach a 'web' firewall (TCP 22/80/443 + ICMP), replace the GitHub token (pasted in chat), then tear down the AWS stack (~$27/month idle; keep the Terraform code)
-- [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
-- [ ] Commit the dev-port changes in real-calc, real-calc-client, abchealth-expressjs, fastapi-postgres and Portfolio, and decide whether to keep the two openapi.yaml files
-- [ ] Re-date the overdue ABChealth todos (Nov 4/8/15), or keep ABChealth items out of the public README
-- [ ] Decide with the founders where the ABChealth landing site lives (Vercel Hobby forbids commercial use; it also needs a long-running server for its cron): Vercel Pro or Render on an account they own. abchealth.lyndbergh.net is fine for a preview; launch on their own domain so the App Store privacy/terms links never change
-- [ ] PR-review agents for my repos on the Anthropic API (Managed Agents), with a page on the platform showing what each did — after the advisor's eval ships
-- [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
-- [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
+- [ ] Finish real-calc's move to Hetzner: confirm the Market data workflow's SSH secrets are set and run it once, turn on Hetzner Backups, attach a 'web' firewall (TCP 22/80/443 + ICMP), replace the GitHub token (pasted in chat)
+- [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
+- [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
+- [ ] ABChealth: enroll in the Apple Developer Program (launch option C, private-first, is chosen) (from 2027-01-01)
 - [ ] Finish Apple Music → YouTube Music playlist app (playlist-video-converter) — due 2027-01-31
-- [ ] ABChealth [pre-Apple]: production Supabase has the 8 SQL files, RLS on every table and 12 articles (checked 2026-11-18); still to check: auth redirects + Google provider, then a full simulator test against prod (due 2026-11-08)
-- [ ] ABChealth [pre-Apple]: landing site's /privacy and /terms are live (checked 2026-11-18); set CONTACT_EMAIL where it's hosted (due 2026-11-08)
-- [ ] ABChealth [pre-Apple]: add Sentry crash reporting + a unit test target for the date decoder and GoalsViewModel (due 2026-11-15)
-- [ ] ABChealth [pre-Apple]: take simulator screenshots, draft listing copy, create the App Review demo account (12 articles are already in prod) (due 2026-11-15)
-- [ ] ABChealth [pre-Apple]: wire or delete the 3 unreachable screens (Create post, Activity, Profile) (due 2026-11-15)
-- [ ] ABChealth [post-Apple]: set team + Sign in with Apple, add Supabase Apple provider, upload 1.0 (1) to TestFlight and test on 2 iPhones (due 2026-11-22)
-- [ ] ABChealth [post-Apple]: run an external TestFlight beta with 15-30 waitlist users; fix crashes only (Nov 23 - Dec 6)
-- [ ] ABChealth [post-Apple]: submit for review Dec 8, launch Dec 14, email the waitlist, watch crash reports for 48h (due 2026-12-14)
+- [ ] ABChealth [pre-Apple]: production Supabase has the 8 SQL files, RLS on every table and 12 articles (checked 2026-11-18); still to check: auth redirects + Google provider, then a full simulator test against prod (due 2026-12-31)
+- [ ] ABChealth: take simulator screenshots and create the App Review demo account (listing copy is drafted in AppStore/LISTING.md) (before submit, 2027-02-02)
+- [ ] ABChealth wire or delete the 3 unreachable screens (Create post, Activity, Profile) (before submit, 2027-02-02)
+- [ ] ABChealth [post-Apple]: set team + Sign in with Apple, add Supabase Apple provider, upload 1.0 (1) to TestFlight and test on 2 iPhones (January 2027)
+- [ ] ABChealth [post-Apple]: run an external TestFlight beta with 15-30 waitlist users; fix crashes only (January 2027)
+- [ ] ABChealth [post-Apple]: submit for review 2027-02-02, launch 2027-02-08, email the waitlist, watch crash reports for 48h
+- [ ] Race Me backend (raceMe-rails): models and race rules for distance, timed and multi-day races with Minitest tests, then the live RaceChannel and race lifecycle jobs (README build order 1–2)
+- [ ] Race Me iOS (raceMe-ios): SwiftUI app that joins a race by code, tracks the run with CoreLocation and shows live positions from the API
 
 ### Someday
 
 - [ ] ABChealth launch: upgrade Supabase to Pro ($25/month) before real users (free projects pause after ~a week idle)
-- [ ] Re-request the AWS Organizations account quota after ~3 months of steady usage, then move real-calc out of the management account into its own member account (RDS snapshot copy, new cert, DNS swap)
 
 ### Recently done
 
-- [x] Portfolio: Create React App → Vite 5 + Vitest (live 2026-11-18) (2026-11-18)
-- [x] Deploy lyndbergh-platform with Kamal on the real-calc VPS, nightly SQLite backups, ntfy alerts and a GitHub Actions heartbeat (2026-11-18)
-- [x] Feedback: ABChealth footer form posts to lyndbergh-platform; Real Calc keeps its own signed-in feedback (deleted with the account) (2026-11-18)
-- [x] real-calc v1 live on a Hetzner VPS with Kamal: https://realcalc.lyndbergh.net, Let's Encrypt HTTPS, Postgres + nightly pg_dump, 29,717 places, 27/28 datasets with every ranking factor above 92% coverage, Google sign-in working (8 days before the Thanksgiving deadline) (2026-11-18)
-- [x] real-calc Security CI fixed (Puma 8.0.2 -> 8.1.2) (2026-11-18)
+- [x] Runbook for real-calc on the VPS: deploy, rollback and Postgres restore (docs/operations.md) (2026-11-18)
+- [x] Commit the dev-port changes across repos (2026-11-18)
+- [x] ABChealth landing site hosting decided: Hetzner VPS with Kamal (2026-11-18)
+- [x] Portfolio contact form moved to lyndbergh-platform; fastapi-postgres retired (2026-11-18)
+- [x] ABChealth landing site: /privacy and /terms live, CONTACT_EMAIL set (2026-11-18)
 
-### Future iterations
-
-| Project | Next iterations |
-|---|---|
-| [real-calc](#real-calc) | Get AWS Support to lift the ECS block, start RDS, deploy and run the first data load; Turn on the advisor (Bedrock) and run the eval suite; Redfin and HUD data to fill the remaining metro-only gaps; Runbook drills: restore the database from a snapshot |
-| [abchealth-swiftapp](#abchealth-swiftapp) | Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild |
-| [playlist-video-converter](#playlist-video-converter) | git init and push, then CI; A golden set of playlists to measure precision and recall |
-| [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
-| [lyndbergh-platform](#lyndbergh-platform) | PR review agents |
-
-## Archive
-
-<details><summary>25 older, school and superseded repos</summary>
-
-| Repo | When | What | Stack |
-|---|---|---|---|
-| [fastapi-postgres](https://github.com/Lsimelus/fastapi-postgres) | 2025-10 → 2026-09 | The original Real Calc API: location ranking, geocoding, saved calculations and magic-link email login. It also handled the contact form for my portfolio. It combined Zillow CSVs, a county-to-metro crosswalk, FBI crime data and FEMA risk data into one weighted match score per city. | Python, FastAPI, SQLAlchemy, Pydantic, PostgreSQL (Neon), pandas, Resend, PyJWT, slowapi, pytest, Vercel |
-| [real-calc-client](https://github.com/Lsimelus/real-calc-client) | 2024-04 → 2026-09 | The Real Calc frontend: a guided questionnaire that computes monthly payment (PITI + PMI) for Conventional, FHA, VA and USDA loans, plus equity, interest and rent-vs-buy charts, and a Location Explorer that ranks real cities within budget with a details view per city. | Next.js 15, React 19 (React Compiler), TypeScript, Redux Toolkit, Tailwind, shadcn/ui (Radix), Recharts, Jest, Playwright |
-| [Marhaban](https://github.com/Lsimelus/Marhaban) | 2025 | Website for a non-profit: news feed from NewsAPI, contact form saved to MongoDB. The backend lived on a separate branch to keep secrets out of the public repo. *Building for a real non-profit client.* | TypeScript, React, Tailwind, Node.js, MongoDB, NewsAPI, Vercel |
-| [lyndbergh_net](https://github.com/Lsimelus/lyndbergh_net) | 2025 | A mobile (Expo) version of my personal site. | TypeScript, React Native (Expo) |
-| [flask-backend](https://github.com/Lsimelus/flask-backend) | 2025 | The earlier backend for real-calc-client and Portfolio. A script generated a CSV of real-estate data that served as the database. *The step between RenderComAPI and fastapi-postgres.* | Python, Flask, MongoDB, Vercel |
-| [RenderComAPI](https://github.com/Lsimelus/RenderComAPI) | 2025 | The first form-handling backend for Portfolio and Marhaban. Replaced by flask-backend. | Node.js, Express, Render |
-| [real-calc-script](https://github.com/Lsimelus/real-calc-script) | 2025 | Data-prep script that joined Zillow rent data, property tax by county and a city/state/county mapping into one result.csv. The start of Real Calc's data pipeline. | Python, pandas |
-| [real-calculator3](https://github.com/Lsimelus/real-calculator3) | 2024 | An early Rails attempt at Real Calc. Interesting given the 2026 rebuild went back to Rails. | Ruby on Rails, Docker |
-| [TechAssessment](https://github.com/Lsimelus/TechAssessment) | 2023 | Take-home technical assessment for LendEDU, a Django web app. *A take-home done under time limits.* | Python, Django, SQLite |
-| [RoyalFitness](https://github.com/Lsimelus/RoyalFitness) | 2023 | iOS fitness app with login, run tracking (mph and average mile pace) and suggested workout videos. *My first iOS app, before ABChealth.* | Swift, iOS, CocoaPods |
-| [MarkovDecisionProcess](https://github.com/Lsimelus/MarkovDecisionProcess) | 2023 | Value iteration on a grid world with configurable discount, epsilon and rewards. | Java |
-| [Neural_Networks](https://github.com/Lsimelus/Neural_Networks) | 2023 | A neural network trained on a two-actor movie script that predicts who is speaking a line. | Python |
-| [Poetry-Generator](https://github.com/Lsimelus/Poetry-Generator) | 2023 | Generates rhyming poems from a sample corpus, optionally in a chosen poet's style, and reads them aloud. | Python |
-| [Genetic-Algorithm-Cookie-recipe-builder](https://github.com/Lsimelus/Genetic-Algorithm-Cookie-recipe-builder) | 2023 | A genetic algorithm that breeds new cookie recipes using flavor-molecule similarity from FlavorDB. | Python, web scraping |
-| [Basic-Web-Scrape](https://github.com/Lsimelus/Basic-Web-Scrape) | 2023 | Scrapes quotes.toscrape.com across pages and groups quotes by author. | Python |
-| [Socket-Programming-BasicWebserver](https://github.com/Lsimelus/Socket-Programming-BasicWebserver) | 2021 | A minimal HTTP server over raw sockets that serves an HTML page. *Good for 'what happens when you type a URL' questions.* | Python, sockets |
-| [Socket-Programming-KnockKnockServer](https://github.com/Lsimelus/Socket-Programming-KnockKnockServer) | 2021 | Computer Networks course: a client/server knock-knock protocol. | Java, sockets |
-| [Socket-Programming-ChatClient](https://github.com/Lsimelus/Socket-Programming-ChatClient) | 2021 | Computer Networks course: a multi-client chat server with a thread per client. | Java, sockets, threads |
-| [Not-So-Legitimate-News](https://github.com/Lsimelus/Not-So-Legitimate-News) | 2021 | Generates parody news headlines, with visuals in Javax. | Java, Swing |
-| [GeneticAlgorithm](https://github.com/Lsimelus/GeneticAlgorithm) | 2020 | A genetic algorithm that evolves random strings toward a target key, comparing selection, crossover and mutation methods. | Java |
-| [NeuralNetworks2](https://github.com/Lsimelus/NeuralNetworks2) | 2020 | A neural network on handwritten digits, comparing error across training sample sizes. | Java |
-| [CasualCreator](https://github.com/Lsimelus/CasualCreator) | 2020 | Interactive colored-blocks toy: click to place shapes, use the keys to change them. | Processing |
-| [Non-InteractiveWebsite2](https://github.com/Lsimelus/Non-InteractiveWebsite2) | 2020 | CS3715 team final project (3 people): an events site with a collapsible search. | HTML, CSS, JavaScript |
-| [Non-interactiveWebsite](https://github.com/Lsimelus/Non-interactiveWebsite) | 2020 | Static site for a fictional research lab (Atlantis Research). | HTML |
-| [RubyBeat](https://github.com/Lsimelus/RubyBeat) | 2020 | A beat written in Ruby. | Ruby, Sonic Pi |
-
-</details>
-
-*Generated from my `/next-level` notes (2026-11-18).*
+*Generated from my `/next-level` notes.*
 
 <!-- walkthrough:end -->
 

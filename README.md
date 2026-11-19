@@ -19,7 +19,7 @@ A walkthrough of what I've built: what each project does, how it's put together,
 | [fastapi-postgres](#fastapi-postgres) | The original Real Calc API: location ranking, geocoding, saved calculations and magic-link email login. | [repo (private)](https://github.com/Lsimelus/fastapi-postgres) |
 | [abchealth-expressjs](#abchealth-expressjs) | The ABChealth landing site and members backend: launch sign-up, Google sign-in, a publisher role that can run and review the members email job, and the /privacy and /terms pages the App Store listing points to. | [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app) |
 | [Portfolio](#portfolio) | My personal site: about, resume (PDF viewer), project gallery with videos, and a contact form that posts to my FastAPI backend and stores messages in Postgres. | [repo](https://github.com/Lsimelus/Portfolio) · [live](https://www.lyndbergh.net) |
-| [lyndbergh-platform](#lyndbergh-platform) | A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. | [repo](https://github.com/Lsimelus/lyndbergh-platform) |
+| [lyndbergh-platform](#lyndbergh-platform) | A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. | [repo](https://github.com/Lsimelus/lyndbergh-platform) · [live](https://platform.lyndbergh.net) |
 
 ### How they connect
 
@@ -338,9 +338,9 @@ Min-max normalize each of the ten factors across the cities that pass the budget
 
 ### lyndbergh-platform
 
-*Nov 2026 · Solo: design, build, CI* · [repo](https://github.com/Lsimelus/lyndbergh-platform)
+*Nov 2026 · Solo: design, build, CI* · [repo](https://github.com/Lsimelus/lyndbergh-platform) · [live](https://platform.lyndbergh.net)
 
-**Status:** Built Nov 2026; monitoring works locally, deploy pending
+**Status:** Live at https://platform.lyndbergh.net since 2026-11-18 (Kamal, same VPS as real-calc)
 
 > A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. I run sites across Rails, Express, FastAPI and Vercel and had no single place that told me which were up. The first run caught a real bug: my ABCHealth API URL was returning the static HTML page with a 200, so a plain uptime check would have called it healthy. I check that APIs answer in JSON, which caught it. It also holds the endpoints my sites share (the contact form and feedback), and its README is the public walkthrough of all my projects.
 
@@ -375,7 +375,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Future iterations:** Deploy it with Kamal on the same VPS as real-calc, with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
+**Future iterations:** Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
 
 ## Story bank
 
@@ -446,7 +446,7 @@ What I'm working on now, what's next, and where each project goes from here.
 | [fastapi-postgres](#fastapi-postgres) | Superseded by real-calc |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
 | [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at lyndbergh-platform, then retire fastapi-postgres |
-| [lyndbergh-platform](#lyndbergh-platform) | Deploy it with Kamal on the same VPS as real-calc, with daily SQLite backups; Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
+| [lyndbergh-platform](#lyndbergh-platform) | Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
 
 ## Archive
 
@@ -544,12 +544,13 @@ Each repo has its own port so they can all run at once.
 
 ### TODO
 
-- [ ] Deploy it with Kamal on the same VPS as real-calc (config, nightly SQLite backups and `bin/prod` are ready; first deploy pending).
+- [x] Deploy it with Kamal on the same VPS as real-calc, with nightly SQLite backups.
 - [ ] A healthchecks.io heartbeat so a dead server still alerts me, and add it to the Portfolio.
 - [ ] PR-review agents on the Anthropic API (Managed Agents), after real-calc's advisor ships with its eval.
 - [ ] Alert when a site goes from up to down (email or a webhook).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
-- [ ] Copy the old messages from fastapi-postgres, point the Portfolio's `REACT_APP_API_URL` here, and retire the FastAPI backend.
+- [x] Copy the old messages from fastapi-postgres (39 imported 2026-11-18).
+- [ ] Point the Portfolio's `REACT_APP_API_URL` here (Vercel env only), watch it for a week, then retire the FastAPI backend.
 - [ ] Feedback buttons on Real Calc and ABChealth that post to `/api/feedback`.
 - [ ] Add `session_id` to real-calc's request log (event-log format) and mention it on its privacy page.
 - [x] Forms page: contact messages to reply to, and feedback by site with average ratings.

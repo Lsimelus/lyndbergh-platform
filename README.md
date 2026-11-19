@@ -15,7 +15,7 @@ A walkthrough of what I've built: what each project does, how it's put together,
 |---|---|---|
 | [real-calc](#real-calc) | Real Calc helps home buyers answer two questions: what can I afford, and where should I look. | [repo (private)](https://github.com/Lsimelus/real-calc) · [live](https://realcalc.lyndbergh.net) |
 | [abchealth-swiftapp](#abchealth-swiftapp) | ABChealth is a supportive wellness-community iOS app: set and track health goals, share your journey in posts, and connect with others, with gentle check-ins instead of pressure. | [repo (private)](https://github.com/Lsimelus/abchealth-swiftapp) |
-| [playlist-video-converter](#playlist-video-converter) | Paste an Apple Music playlist link and get back a YouTube Music playlist of the songs' official music videos only. | local only |
+| [playlist-video-converter](#playlist-video-converter) | Paste an Apple Music playlist link and get back a YouTube Music playlist of the songs' official music videos only. | [repo (private)](https://github.com/Lsimelus/playlist-video-converter) |
 | [abchealth-expressjs](#abchealth-expressjs) | The ABChealth landing site and members backend: launch sign-up, Google sign-in, a publisher role that can run and review the members email job, and the /privacy and /terms pages the App Store listing points to. | [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app) |
 | [Portfolio](#portfolio) | My personal site: about, resume (PDF viewer), project gallery with videos, and a contact form that posts to my FastAPI backend and stores messages in Postgres. | [repo](https://github.com/Lsimelus/Portfolio) · [live](https://www.lyndbergh.net) |
 | [lyndbergh-platform](#lyndbergh-platform) | A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. | [repo](https://github.com/Lsimelus/lyndbergh-platform) · [live](https://platform.lyndbergh.net) |
@@ -197,7 +197,7 @@ Production Supabase and auth go live first, with a full simulator test against p
 
 ### playlist-video-converter
 
-*2026 → now · Solo* · local only
+*2026 → now · Solo* · [repo (private)](https://github.com/Lsimelus/playlist-video-converter)
 
 **Status:** Building, due 2027-01-31
 
@@ -302,7 +302,7 @@ Fixed cases for the tricky ones (masked titles, remixes, lyric videos, artist-ch
 
 **Stack:** Ruby 4, Rails 8, SQLite, Solid Queue, Minitest, GitHub Actions
 
-**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites. Every page (status and /forms) is behind one admin login; only the two API endpoints are public. The /forms page lists contact messages with a Reply link and shows feedback by site: average rating, the 1-5 spread and recent comments.
+**Architecture.** Sites are listed in config/sites.yml. A recurring Solid Queue job (CheckSitesJob, every 5 minutes) requests each health URL with 10-second timeouts and stores one Check row: ok, HTTP status, latency, error. Checks older than 30 days are pruned. One status page reads the latest check, 24-hour uptime and the last 48 checks per site. SQLite, no external services. Shared endpoints: POST /api/contact-form and POST /api/feedback, two tables (contact_messages, feedback) under one abstract Submission model, and two controller parents: Api::BaseController (the {data, meta, error} envelope and request logging) and Api::SubmissionsController (rate limiting at 5 per 10 minutes per IP, plus a honeypot field). Every app logs in one shared JSON event format with a per-session id, so a person's path can be followed across sites. The status page and the two API endpoints are public; /forms is behind an admin login. The /forms page lists contact messages with a Reply link and shows feedback by site: average rating, the 1-5 spread and recent comments.
 
 **Key decisions**
 
@@ -471,7 +471,7 @@ Add a site by adding an entry to `config/sites.yml`.
 It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzner VPS as real-calc
 (its own container behind the shared kamal-proxy). `bin/prod` wraps Kamal and loads `.env.production`
 (gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
-`ADMIN_PASSWORD` (the login for every page; the API stays open) and `ALERT_URL` (ntfy.sh topic for down/up pushes).
+`ADMIN_PASSWORD` (the /forms login; the status page and API are public) and `ALERT_URL` (ntfy.sh topic for down/up pushes).
 A scheduled GitHub Actions workflow calls `/api/heartbeat` every 10 minutes and pushes to the same
 topic (repo secret `ALERT_URL`) if the server is down or its checks stopped. SQLite lives in the `lyndbergh_platform_storage` volume and a
 nightly job copies it to `storage/backups` (14 days kept).

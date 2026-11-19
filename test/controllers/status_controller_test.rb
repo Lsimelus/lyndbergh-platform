@@ -12,12 +12,9 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='https://realcalc.lyndbergh.net/admin/telemetry']", "Traffic"
   end
 
-  test "needs the admin password when one is set" do
+  test "is public even when the admin password is set" do
     ENV["ADMIN_PASSWORD"] = "s3cret"
     get root_path
-    assert_response :unauthorized
-
-    get root_path, headers: { "Authorization" => ActionController::HttpAuthentication::Basic.encode_credentials("admin", "s3cret") }
     assert_response :success
   ensure
     ENV.delete("ADMIN_PASSWORD")

@@ -1,4 +1,7 @@
+# GET /: public status of every site. No personal data here, so no login (unlike /forms).
 class StatusController < ApplicationController
+  skip_before_action :require_admin
+
   def index
     @sites = Site.all.map do |site|
       checks = site.checks.recent

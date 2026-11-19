@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  # Every page is for me only (the JSON API under Api:: has its own base class and stays open).
+  # Pages are for me only unless they opt out (the status page does; the JSON API under Api:: has its own base class).
   # Password is ADMIN_PASSWORD, user ADMIN_USER or "admin". Without a password set, pages are
   # locked, except on my own machine (development and test).
   before_action :require_admin

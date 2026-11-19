@@ -22,9 +22,3 @@
   health_path: /api/health
   repo: Lsimelus/abchealth-expressjs
   expect: json
-
-- slug: fastapi-postgres
-  name: FastAPI backend (legacy)
-  url: https://fastapi-postgres-gamma.vercel.app
-  health_path: /health
-  repo: Lsimelus/fastapi-postgres

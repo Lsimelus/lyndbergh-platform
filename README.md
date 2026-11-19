@@ -16,7 +16,6 @@ A walkthrough of what I've built: what each project does, how it's put together,
 | [real-calc](#real-calc) | Real Calc helps home buyers answer two questions: what can I afford, and where should I look. | [repo (private)](https://github.com/Lsimelus/real-calc) · [live](https://realcalc.lyndbergh.net) |
 | [abchealth-swiftapp](#abchealth-swiftapp) | ABChealth is a supportive wellness-community iOS app: set and track health goals, share your journey in posts, and connect with others, with gentle check-ins instead of pressure. | [repo (private)](https://github.com/Lsimelus/abchealth-swiftapp) |
 | [playlist-video-converter](#playlist-video-converter) | Paste an Apple Music playlist link and get back a YouTube Music playlist of the songs' official music videos only. | local only |
-| [fastapi-postgres](#fastapi-postgres) | The original Real Calc API: location ranking, geocoding, saved calculations and magic-link email login. | [repo (private)](https://github.com/Lsimelus/fastapi-postgres) |
 | [abchealth-expressjs](#abchealth-expressjs) | The ABChealth landing site and members backend: launch sign-up, Google sign-in, a publisher role that can run and review the members email job, and the /privacy and /terms pages the App Store listing points to. | [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app) |
 | [Portfolio](#portfolio) | My personal site: about, resume (PDF viewer), project gallery with videos, and a contact form that posts to my FastAPI backend and stores messages in Postgres. | [repo](https://github.com/Lsimelus/Portfolio) · [live](https://www.lyndbergh.net) |
 | [lyndbergh-platform](#lyndbergh-platform) | A small Rails 8 app that checks every one of my sites every five minutes and shows uptime, latency and history next to each repo's CI and Dependabot links. | [repo](https://github.com/Lsimelus/lyndbergh-platform) · [live](https://platform.lyndbergh.net) |
@@ -27,8 +26,6 @@ A walkthrough of what I've built: what each project does, how it's put together,
 flowchart LR
   subgraph realcalc["Real Calc"]
     rc["real-calc<br/>Rails modular monolith + React SPA"]
-    fp["fastapi-postgres<br/>FastAPI (being replaced)"]
-    rc -.->|replaces| fp
   end
   subgraph abc["ABChealth"]
     ios["abchealth-swiftapp<br/>SwiftUI"] --> supa[("Supabase<br/>auth + Postgres")]
@@ -37,7 +34,7 @@ flowchart LR
   subgraph pvc["Playlist converter"]
     ui["Rails UI"] --> conv["FastAPI converter"] --> ytm["YouTube Music"]
   end
-  pf["Portfolio<br/>lyndbergh.net"] -->|contact form| fp
+  pf["Portfolio<br/>lyndbergh.net"] -->|contact form| plat["lyndbergh-platform<br/>Rails + SQLite"]
 ```
 
 ## Featured
@@ -237,45 +234,6 @@ Fixed cases for the tricky ones (masked titles, remixes, lyric videos, artist-ch
 
 ## Supporting
 
-### fastapi-postgres
-
-*2025-10 → 2026-09 · Solo backend engineer* · [repo (private)](https://github.com/Lsimelus/fastapi-postgres)
-
-**Status:** Being replaced by real-calc (archive after cutover)
-
-> The original Real Calc API: location ranking, geocoding, saved calculations and magic-link email login. It also handled the contact form for my portfolio. It combined Zillow CSVs, a county-to-metro crosswalk, FBI crime data and FEMA risk data into one weighted match score per city.
-
-**Stack:** Python, FastAPI, SQLAlchemy, Pydantic, PostgreSQL (Neon), pandas, Resend, PyJWT, slowapi, pytest, Vercel
-
-**Architecture.** main.py (FastAPI routes) → csv_utils.py (ranking plus CSV/JSON lookups) and external_apis.py (live Census, BLS and FEMA calls). Cities come from Postgres. For each one: find its Zillow metro (directly or through the county crosswalk), read its factors, min-max normalize across the candidate pool, then combine with user-weighted priorities. Each response marks which factors had data, so the UI can show N/A instead of a made-up number.
-
-**Key decisions**
-
-- **Report missing data per factor (score_data_available) instead of filling it in.** A made-up 50% looks real to a user. Being honest about gaps builds trust. *Trade-off:* The frontend has more cases to handle.
-- **Rate limiting with slowapi and an email whitelist.** Protects the free-tier email quota and the API from abuse. *Trade-off:* Limits are per process on serverless, so they're only approximate.
-
-**Numbers**
-
-- About 117 pytest tests across 7 files
-- main.py 1,810 lines, csv_utils.py 1,780 lines
-
-**Hard parts**
-
-- Matching cities to Zillow metros when a town isn't a named metro: solved with a county → CBSA crosswalk.
-- The two 1,800-line modules became hard to change, which is what led to the Rails rebuild.
-
-<details><summary>Likely questions</summary>
-
-**What would you do differently?**  
-Load data through a pipeline into tables from day one instead of reading files on every request, and split modules by domain early. I did both in the Rails rebuild.
-
-**How does the ranking work?**  
-Min-max normalize each of the ten factors across the cities that pass the budget filter, apply default weights plus up to two user priorities, and sum to a 0–100 score. Missing factors are flagged, not filled in.
-
-</details>
-
-**Future iterations:** Superseded by real-calc
-
 ### abchealth-expressjs
 
 *2025-11 → 2026-09 · Engineer* · [repo (private)](https://github.com/Lsimelus/abchealth-expressjs) · [live](https://abchealth-expressjs.vercel.app)
@@ -334,7 +292,7 @@ Min-max normalize each of the ten factors across the cities that pass the budget
 
 - The contact backend has moved three times (Render Node → Flask → FastAPI), each time behind the same form.
 
-**Future iterations:** Move off CRA (deprecated) to Vite; Point the contact form at lyndbergh-platform, then retire fastapi-postgres
+**Future iterations:** Move off CRA (deprecated) to Vite
 
 ### lyndbergh-platform
 
@@ -375,7 +333,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Future iterations:** Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
+**Future iterations:** Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
 
 ## Story bank
 
@@ -443,17 +401,17 @@ What I'm working on now, what's next, and where each project goes from here.
 | [real-calc](#real-calc) | Get AWS Support to lift the ECS block, start RDS, deploy and run the first data load; Turn on the advisor (Bedrock) and run the eval suite; Redfin and HUD data to fill the remaining metro-only gaps; Runbook drills: restore the database from a snapshot |
 | [abchealth-swiftapp](#abchealth-swiftapp) | Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild |
 | [playlist-video-converter](#playlist-video-converter) | git init and push, then CI; A golden set of playlists to measure precision and recall |
-| [fastapi-postgres](#fastapi-postgres) | Superseded by real-calc |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
-| [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite; Point the contact form at lyndbergh-platform, then retire fastapi-postgres |
-| [lyndbergh-platform](#lyndbergh-platform) | Move the Portfolio contact form here and retire fastapi-postgres; Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
+| [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite |
+| [lyndbergh-platform](#lyndbergh-platform) | Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
 
 ## Archive
 
-<details><summary>24 older, school and superseded repos</summary>
+<details><summary>25 older, school and superseded repos</summary>
 
 | Repo | When | What | Stack |
 |---|---|---|---|
+| [fastapi-postgres](https://github.com/Lsimelus/fastapi-postgres) | 2025-10 → 2026-09 | The original Real Calc API: location ranking, geocoding, saved calculations and magic-link email login. It also handled the contact form for my portfolio. It combined Zillow CSVs, a county-to-metro crosswalk, FBI crime data and FEMA risk data into one weighted match score per city. | Python, FastAPI, SQLAlchemy, Pydantic, PostgreSQL (Neon), pandas, Resend, PyJWT, slowapi, pytest, Vercel |
 | [real-calc-client](https://github.com/Lsimelus/real-calc-client) | 2024-04 → 2026-09 | The Real Calc frontend: a guided questionnaire that computes monthly payment (PITI + PMI) for Conventional, FHA, VA and USDA loans, plus equity, interest and rent-vs-buy charts, and a Location Explorer that ranks real cities within budget with a details view per city. | Next.js 15, React 19 (React Compiler), TypeScript, Redux Toolkit, Tailwind, shadcn/ui (Radix), Recharts, Jest, Playwright |
 | [Marhaban](https://github.com/Lsimelus/Marhaban) | 2025 | Website for a non-profit: news feed from NewsAPI, contact form saved to MongoDB. The backend lived on a separate branch to keep secrets out of the public repo. *Building for a real non-profit client.* | TypeScript, React, Tailwind, Node.js, MongoDB, NewsAPI, Vercel |
 | [lyndbergh_net](https://github.com/Lsimelus/lyndbergh_net) | 2025 | A mobile (Expo) version of my personal site. | TypeScript, React Native (Expo) |
@@ -539,7 +497,6 @@ Each repo has its own port so they can all run at once.
 | Portfolio | 3002 |
 | lyndbergh-platform | 3004 |
 | playlist-video-converter | 3100 (Rails UI), 8787 (server), 8788 (CLI sign-in) |
-| fastapi-postgres | 8000 |
 | Postgres | 5432 |
 
 ### TODO
@@ -550,7 +507,7 @@ Each repo has its own port so they can all run at once.
 - [ ] Alert when a site goes from up to down (email or a webhook).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
 - [x] Copy the old messages from fastapi-postgres (39 imported 2026-11-18).
-- [ ] Point the Portfolio's `REACT_APP_API_URL` here (Vercel env only), watch it for a week, then retire the FastAPI backend.
+- [x] Point the Portfolio's `REACT_APP_API_URL` here (Vercel env only) and retire the FastAPI backend.
 - [ ] Feedback buttons on Real Calc and ABChealth that post to `/api/feedback`.
 - [ ] Add `session_id` to real-calc's request log (event-log format) and mention it on its privacy page.
 - [x] Forms page: contact messages to reply to, and feedback by site with average ratings.

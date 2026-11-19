@@ -1,10 +1,8 @@
 require "net/http"
 
-# Tells me when something breaks. Both are off until their URL is set (in .env.production):
-# - ALERT_URL: a site went down or came back. A plain-text POST, so an ntfy.sh topic URL
-#   (push to my phone, no account) works as is.
-# - HEARTBEAT_URL: pinged after every round of checks (a healthchecks.io check). If the server
-#   or the job dies, the pings stop and healthchecks.io emails me.
+# Tells me when a site goes down or comes back: a plain-text POST to ALERT_URL (in
+# .env.production), so an ntfy.sh topic URL (push to my phone, no account) works as is. Off when
+# unset. A dead server is caught from outside: .github/workflows/heartbeat.yml calls /api/heartbeat.
 module Alert
   TIMEOUT = 5
 
@@ -15,8 +13,6 @@ module Alert
     message = current.ok? ? "#{site.name} is back up" : "#{site.name} is down: #{current.error || 'no response'}"
     post.call(ENV["ALERT_URL"], message, current.ok? ? "white_check_mark" : "rotating_light")
   end
-
-  def self.heartbeat(post: method(:post)) = post.call(ENV["HEARTBEAT_URL"], "ok", nil)
 
   # Never raises: an alert that fails to send mustn't stop the checks.
   def self.post(url, body, tag)

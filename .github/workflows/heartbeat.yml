@@ -1,0 +1,24 @@
+# Watches the platform from outside: if the server is down or its checks stopped running,
+# this run fails (GitHub emails me) and pushes to my phone through ALERT_URL (repo secret).
+name: Heartbeat
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Platform answers and its checks are fresh
+        run: curl -fsS --retry 2 --retry-delay 20 --max-time 20 https://platform.lyndbergh.net/api/heartbeat
+      - name: Push an alert
+        if: failure()
+        env:
+          ALERT_URL: ${{ secrets.ALERT_URL }}
+        run: |
+          [ -n "$ALERT_URL" ] && curl -fsS -H "Tags: rotating_light" \
+            -d "lyndbergh-platform heartbeat failed: server down or checks stopped" "$ALERT_URL"

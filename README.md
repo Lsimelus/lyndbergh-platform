@@ -362,7 +362,6 @@ What I'm working on now, what's next, and where each project goes from here.
 ### Up next
 
 - [ ] Finish the move off AWS: set the GitHub secrets so the Market data workflow refreshes over SSH (then test it), switch real-calc's deploy workflow from ECS to Kamal and merge deploy/kamal-vps into main, turn on Hetzner Backups and attach a 'web' firewall (TCP 22/80/443 + ICMP), replace the GitHub token (pasted in chat), then tear down the AWS stack (~$27/month idle; keep the Terraform code)
-- [ ] Deploy lyndbergh-platform with Kamal on the same VPS as real-calc, with daily SQLite backups and a free healthchecks.io heartbeat so I still hear about it if the server goes down
 - [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
 - [ ] Commit the dev-port changes in real-calc, real-calc-client, abchealth-expressjs, fastapi-postgres and Portfolio, and decide whether to keep the two openapi.yaml files
 - [ ] Re-date the overdue ABChealth todos (Nov 4/8/15), or keep ABChealth items out of the public README
@@ -387,11 +386,11 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Recently done
 
+- [x] Deploy lyndbergh-platform with Kamal on the real-calc VPS, nightly SQLite backups, ntfy alerts and a GitHub Actions heartbeat (2026-11-18)
 - [x] Feedback: ABChealth footer form posts to lyndbergh-platform; Real Calc keeps its own signed-in feedback (deleted with the account) (2026-11-18)
 - [x] real-calc v1 live on a Hetzner VPS with Kamal: https://realcalc.lyndbergh.net, Let's Encrypt HTTPS, Postgres + nightly pg_dump, 29,717 places, 27/28 datasets with every ranking factor above 92% coverage, Google sign-in working (8 days before the Thanksgiving deadline) (2026-11-18)
 - [x] real-calc Security CI fixed (Puma 8.0.2 -> 8.1.2) (2026-11-18)
 - [x] Kamal config for real-calc (Postgres + nightly pg_dump accessories, server-side build, ghcr.io); kamal setup took 4 minutes; realcalc.lyndbergh.net live with Let's Encrypt HTTPS (2026-11-18)
-- [x] Hetzner server created (CX22, Helsinki, 46.62.241.225), SSH key and GitHub token set up (2026-11-18)
 
 ### Future iterations
 
@@ -475,8 +474,9 @@ Add a site by adding an entry to `config/sites.yml`.
 It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzner VPS as real-calc
 (its own container behind the shared kamal-proxy). `bin/prod` wraps Kamal and loads `.env.production`
 (gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
-`ADMIN_PASSWORD` (the login for every page; the API stays open), `ALERT_URL` (ntfy.sh topic for down/up pushes) and
-`HEARTBEAT_URL` (healthchecks.io ping, so a dead server alerts too). SQLite lives in the `lyndbergh_platform_storage` volume and a
+`ADMIN_PASSWORD` (the login for every page; the API stays open) and `ALERT_URL` (ntfy.sh topic for down/up pushes).
+A scheduled GitHub Actions workflow calls `/api/heartbeat` every 10 minutes and pushes to the same
+topic (repo secret `ALERT_URL`) if the server is down or its checks stopped. SQLite lives in the `lyndbergh_platform_storage` volume and a
 nightly job copies it to `storage/backups` (14 days kept).
 
 ```bash
@@ -502,7 +502,7 @@ Each repo has its own port so they can all run at once.
 ### TODO
 
 - [x] Deploy it with Kamal on the same VPS as real-calc, with nightly SQLite backups.
-- [x] A healthchecks.io heartbeat (`HEARTBEAT_URL`) so a dead server still alerts me.
+- [x] A heartbeat from outside (GitHub Actions → `/api/heartbeat` every 10 minutes) so a dead server still alerts me.
 - [x] Add it to the Portfolio (as "Ops Platform").
 - [ ] PR-review agents on the Anthropic API (Managed Agents), after real-calc's advisor ships with its eval.
 - [x] Alert when a site goes down or comes back (`ALERT_URL`, an ntfy.sh topic: push to my phone).

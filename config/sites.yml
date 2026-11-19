@@ -19,6 +19,5 @@
 - slug: abchealth
   name: ABCHealth
   url: https://abchealth-expressjs.vercel.app
-  health_path: /api/health
   repo: Lsimelus/abchealth-expressjs
-  expect: json
+  # The Vercel deploy serves only the static landing page; its API (/api/health) runs elsewhere.

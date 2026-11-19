@@ -84,7 +84,6 @@ flowchart TD
   location_advisor --> accounts
   location_advisor --> mortgage_math
   location_advisor --> market_data
-  location_advisor --> contact
   locations --> market_data
   locations --> public_data_apis
   notifications --> session_tokens
@@ -442,10 +441,10 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Up next
 
-- [ ] Deploy step 1 (me): create a Hetzner CX22 (Ubuntu 24.04, Ashburn) with my SSH key, plus a GitHub token with write:packages for the image registry, and send Claude the IP
+- [ ] Deploy step 1 (me): create the Hetzner cx23 (x86, 2 vCPU, 4 GB, ~$7/month) in Nuremberg with Ubuntu 24.04 and my SSH key, put the GitHub token (write:packages) in real-calc-kamal/.env.production, and send Claude the IP
 - [ ] Deploy step 2: fix real-calc's failing Security CI job (failing nightly since 2026-11-17) before go-live
 - [ ] Deploy step 3: restore real-calc's Kamal config from git history, with Postgres on the server (Kamal accessory) and daily backups instead of Neon
-- [ ] Deploy step 4: point realcalc.lyndbergh.net at the VPS in Google Cloud DNS (today it points at the AWS load balancer), check /health and sign-in, then tear down the AWS stack to stop the idle bill (~$27/month; keep the Terraform code)
+- [ ] Deploy step 4: before go-live, turn on Hetzner Backups (~$1.30/month) and attach a 'web' firewall (inbound TCP 22, 80, 443 + ICMP only); add https://realcalc.lyndbergh.net/auth/google_oauth2/callback to the Google sign-in client; point realcalc.lyndbergh.net at the VPS in Google Cloud DNS (today it points at the AWS load balancer), check /health and sign-in, then tear down the AWS stack to stop the idle bill (~$27/month; keep the Terraform code)
 - [ ] Deploy lyndbergh-platform with Kamal on the same VPS as real-calc, with daily SQLite backups and a free healthchecks.io heartbeat so I still hear about it if the server goes down
 - [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
 - [ ] Commit the dev-port changes in real-calc, real-calc-client, abchealth-expressjs, fastapi-postgres and Portfolio, and decide whether to keep the two openapi.yaml files

@@ -18,11 +18,17 @@ What I'm working on now and what's next.
 
 ### Up next
 
+- [ ] Watchmix cleanup: delete prototype leftovers (demo.py, setup.sh, requirements-minimal.txt, requirements-simple.txt, test_imports.py, src/ai/embeddings*.py, SUCCESS.md, QUICKSTART.md, sample_playlist.json, the outdated ARCHITECTURE.md, empty dashboard/); after the Kamal deploy also docker-compose.yml and Caddyfile
+- [ ] real-calc: tear down the AWS stack (terraform destroy, keep RDS's final snapshot), then remove infra/, the infra.yml workflow, the Terraform Dependabot entry, the aws-sdk gems and the S3 branch in MarketData::Storage
+- [ ] Portfolio cleanup: remove the unused react-pdf-viewer dependency and the stray build/ and frontend/ folders; add ESLint to CI like real-calc's frontend (or fix CLAUDE.md, which still says lint warnings fail the build)
+- [ ] abchealth-expressjs: add a CI workflow that runs the Jest tests; remove .vercel/ and deploy/vercel-redirect.json once the Kamal branch merges
+- [ ] Dependabot (dependencies + github-actions) for Portfolio, Watchmix and abchealth-expressjs, and bring their CI actions up to date (checkout v4/v5 → v7)
+- [ ] Even out security scans: Brakeman for Watchmix's Rails UI, npm audit in Portfolio's and abchealth-expressjs's CI
+- [ ] Watchmix ADR 0001: record that Python's reason (ytmusicapi) is gone; after launch, decide whether to move the matcher and Apple parser into the Rails app (one runtime, one image)
 - [ ] Finish real-calc's move to Hetzner: confirm the Market data workflow's SSH secrets are set and run it once, turn on Hetzner Backups, attach a 'web' firewall (TCP 22/80/443 + ICMP), replace the GitHub token (pasted in chat)
 - [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
 - [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
 - [ ] ABChealth: enroll in the Apple Developer Program (launch option C, private-first, is chosen) (from 2027-01-01)
-- [ ] Finish Apple Music → YouTube Music playlist app (playlist-video-converter) — due 2027-01-31
 - [ ] ABChealth [pre-Apple]: production Supabase has the 8 SQL files, RLS on every table and 12 articles (checked 2026-11-18); still to check: auth redirects + Google provider, then a full simulator test against prod (due 2026-12-31)
 - [ ] ABChealth: take simulator screenshots and create the App Review demo account (listing copy is drafted in AppStore/LISTING.md) (before submit, 2027-02-02)
 - [ ] ABChealth wire or delete the 3 unreachable screens (Create post, Activity, Profile) (before submit, 2027-02-02)
@@ -31,18 +37,11 @@ What I'm working on now and what's next.
 - [ ] ABChealth [post-Apple]: submit for review 2027-02-02, launch 2027-02-08, email the waitlist, watch crash reports for 48h
 - [ ] Race Me backend (raceMe-rails): models and race rules for distance, timed and multi-day races with Minitest tests, then the live RaceChannel and race lifecycle jobs (README build order 1–2)
 - [ ] Race Me iOS (raceMe-ios): SwiftUI app that joins a race by code, tracks the run with CoreLocation and shows live positions from the API
+- [ ] Watchmix deploy: watchmix.lyndbergh.net A record, production YouTube API key (server IP), replace the OAuth client secret + add the production redirect URI, Kamal config (Rails UI + converter accessory), add it to the platform's sites.yml, then start Google's OAuth verification and quota increase — due 2027-01-31
 
 ### Someday
 
 - [ ] ABChealth launch: upgrade Supabase to Pro ($25/month) before real users (free projects pause after ~a week idle)
-
-### Recently done
-
-- [x] Runbook for real-calc on the VPS: deploy, rollback and Postgres restore (docs/operations.md) (2026-11-18)
-- [x] Commit the dev-port changes across repos (2026-11-18)
-- [x] ABChealth landing site hosting decided: Hetzner VPS with Kamal (2026-11-18)
-- [x] Portfolio contact form moved to lyndbergh-platform; fastapi-postgres retired (2026-11-18)
-- [x] ABChealth landing site: /privacy and /terms live, CONTACT_EMAIL set (2026-11-18)
 
 *Generated from my `/next-level` notes.*
 

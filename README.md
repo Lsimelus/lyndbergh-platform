@@ -504,7 +504,7 @@ Each repo has its own port so they can all run at once.
 
 - [x] Deploy it with Kamal on the same VPS as real-calc, with nightly SQLite backups.
 - [x] A healthchecks.io heartbeat (`HEARTBEAT_URL`) so a dead server still alerts me.
-- [ ] Add it to the Portfolio.
+- [x] Add it to the Portfolio (as "Ops Platform").
 - [ ] PR-review agents on the Anthropic API (Managed Agents), after real-calc's advisor ships with its eval.
 - [x] Alert when a site goes down or comes back (`ALERT_URL`, an ntfy.sh topic: push to my phone).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.

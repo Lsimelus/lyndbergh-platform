@@ -333,7 +333,7 @@ Alerts on an up-to-down transition, then moving my Portfolio's contact form back
 
 </details>
 
-**Future iterations:** Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents
+**Future iterations:** PR review agents
 
 ## Story bank
 
@@ -369,7 +369,6 @@ What I'm working on now, what's next, and where each project goes from here.
 - [ ] Decide with the founders where the ABChealth landing site lives (Vercel Hobby forbids commercial use; it also needs a long-running server for its cron): Vercel Pro or Render on an account they own. abchealth.lyndbergh.net is fine for a preview; launch on their own domain so the App Store privacy/terms links never change
 - [ ] PR-review agents for my repos on the Anthropic API (Managed Agents), with a page on the platform showing what each did — after the advisor's eval ships
 - [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
-- [ ] Add feedback buttons (rate the experience and/or comment) to Real Calc and ABChealth, posting to lyndbergh-platform's /api/feedback
 - [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
 - [ ] Finish Apple Music → YouTube Music playlist app (playlist-video-converter) — due 2027-01-31
 - [ ] ABChealth [pre-Apple]: stand up production Supabase: apply the 8 SQL files, auth redirects + Google provider, full simulator test against prod (due 2026-11-08)
@@ -388,11 +387,11 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Recently done
 
+- [x] Feedback: ABChealth footer form posts to lyndbergh-platform; Real Calc keeps its own signed-in feedback (deleted with the account) (2026-11-18)
 - [x] real-calc v1 live on a Hetzner VPS with Kamal: https://realcalc.lyndbergh.net, Let's Encrypt HTTPS, Postgres + nightly pg_dump, 29,717 places, 27/28 datasets with every ranking factor above 92% coverage, Google sign-in working (8 days before the Thanksgiving deadline) (2026-11-18)
 - [x] real-calc Security CI fixed (Puma 8.0.2 -> 8.1.2) (2026-11-18)
 - [x] Kamal config for real-calc (Postgres + nightly pg_dump accessories, server-side build, ghcr.io); kamal setup took 4 minutes; realcalc.lyndbergh.net live with Let's Encrypt HTTPS (2026-11-18)
 - [x] Hetzner server created (CX22, Helsinki, 46.62.241.225), SSH key and GitHub token set up (2026-11-18)
-- [x] data:refresh ends with VACUUM ANALYZE so the database stops growing each month (commit 5970785) (2026-11-13)
 
 ### Future iterations
 
@@ -403,7 +402,7 @@ What I'm working on now, what's next, and where each project goes from here.
 | [playlist-video-converter](#playlist-video-converter) | git init and push, then CI; A golden set of playlists to measure precision and recall |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
 | [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite |
-| [lyndbergh-platform](#lyndbergh-platform) | Feedback buttons on Real Calc and ABChealth; Alert on up-to-down transitions; PR review agents |
+| [lyndbergh-platform](#lyndbergh-platform) | PR review agents |
 
 ## Archive
 
@@ -452,7 +451,7 @@ A Rails 8 app (SQLite, Solid Queue) with three parts.
 | Endpoint | Used by |
 |---|---|
 | `POST /api/contact-form` | The Portfolio's contact form |
-| `POST /api/feedback` | Feedback buttons (rate the experience and/or comment) on Real Calc and ABChealth |
+| `POST /api/feedback` | ABChealth's footer feedback form (rating and/or comment). Real Calc keeps its own in-app feedback. |
 
 **Forms page** (`/forms`, password-protected). Contact messages, newest first, each with a Reply link, and feedback grouped by site with the average rating, how ratings are spread across 1–5, and recent comments. Set `ADMIN_PASSWORD` (and optionally `ADMIN_USER`, default `admin`); without it the page is locked everywhere except on my machine.
 
@@ -510,6 +509,6 @@ Each repo has its own port so they can all run at once.
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
 - [x] Copy the old messages from fastapi-postgres (39 imported 2026-11-18).
 - [x] Point the Portfolio's `REACT_APP_API_URL` here (Vercel env only) and retire the FastAPI backend.
-- [ ] Feedback buttons on Real Calc and ABChealth that post to `/api/feedback`.
+- [x] Feedback form on ABChealth that posts to `/api/feedback` (Real Calc keeps its own signed-in feedback, deleted with the account).
 - [ ] Add `session_id` to real-calc's request log (event-log format) and mention it on its privacy page.
 - [x] Forms page: contact messages to reply to, and feedback by site with average ratings.

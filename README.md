@@ -276,7 +276,7 @@ Fixed cases for the tricky ones (masked titles, remixes, lyric videos, artist-ch
 
 > My personal site: about, resume (PDF viewer), project gallery with videos, and a contact form that posts to my FastAPI backend and stores messages in Postgres.
 
-**Stack:** React 18, TypeScript, Create React App, MUI, styled-components, axios, Vercel
+**Stack:** React 18, TypeScript, Vite, MUI, styled-components, axios, Vercel
 
 **Architecture.** A single-page app with scroll navigation. All content lives in src/data/data.tsx. The contact form POSTs to /api/contact-form on the FastAPI backend.
 
@@ -291,8 +291,6 @@ Fixed cases for the tricky ones (masked titles, remixes, lyric videos, artist-ch
 **Hard parts**
 
 - The contact backend has moved three times (Render Node → Flask → FastAPI), each time behind the same form.
-
-**Future iterations:** Move off CRA (deprecated) to Vite
 
 ### lyndbergh-platform
 
@@ -370,10 +368,10 @@ What I'm working on now, what's next, and where each project goes from here.
 - [ ] Move the Portfolio contact form to lyndbergh-platform: copy the contact_forms rows from fastapi-postgres, point REACT_APP_API_URL (Vercel + .env) at it, watch it for a week, then retire fastapi-postgres
 - [ ] ABChealth [pre-Apple]: enroll in the Apple Developer Program and pick the launch option (A open community / B circles / C private-first) (due 2026-11-04)
 - [ ] Finish Apple Music → YouTube Music playlist app (playlist-video-converter) — due 2027-01-31
-- [ ] ABChealth [pre-Apple]: stand up production Supabase: apply the 8 SQL files, auth redirects + Google provider, full simulator test against prod (due 2026-11-08)
-- [ ] ABChealth [pre-Apple]: deploy the landing site with /privacy and /terms live (set CONTACT_EMAIL in Vercel) (due 2026-11-08)
+- [ ] ABChealth [pre-Apple]: production Supabase has the 8 SQL files, RLS on every table and 12 articles (checked 2026-11-18); still to check: auth redirects + Google provider, then a full simulator test against prod (due 2026-11-08)
+- [ ] ABChealth [pre-Apple]: landing site's /privacy and /terms are live (checked 2026-11-18); set CONTACT_EMAIL where it's hosted (due 2026-11-08)
 - [ ] ABChealth [pre-Apple]: add Sentry crash reporting + a unit test target for the date decoder and GoalsViewModel (due 2026-11-15)
-- [ ] ABChealth [pre-Apple]: write 10-15 evergreen articles, take simulator screenshots, draft listing copy, create the App Review demo account (due 2026-11-15)
+- [ ] ABChealth [pre-Apple]: take simulator screenshots, draft listing copy, create the App Review demo account (12 articles are already in prod) (due 2026-11-15)
 - [ ] ABChealth [pre-Apple]: wire or delete the 3 unreachable screens (Create post, Activity, Profile) (due 2026-11-15)
 - [ ] ABChealth [post-Apple]: set team + Sign in with Apple, add Supabase Apple provider, upload 1.0 (1) to TestFlight and test on 2 iPhones (due 2026-11-22)
 - [ ] ABChealth [post-Apple]: run an external TestFlight beta with 15-30 waitlist users; fix crashes only (Nov 23 - Dec 6)
@@ -386,11 +384,11 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Recently done
 
+- [x] Portfolio: Create React App → Vite 5 + Vitest (live 2026-11-18) (2026-11-18)
 - [x] Deploy lyndbergh-platform with Kamal on the real-calc VPS, nightly SQLite backups, ntfy alerts and a GitHub Actions heartbeat (2026-11-18)
 - [x] Feedback: ABChealth footer form posts to lyndbergh-platform; Real Calc keeps its own signed-in feedback (deleted with the account) (2026-11-18)
 - [x] real-calc v1 live on a Hetzner VPS with Kamal: https://realcalc.lyndbergh.net, Let's Encrypt HTTPS, Postgres + nightly pg_dump, 29,717 places, 27/28 datasets with every ranking factor above 92% coverage, Google sign-in working (8 days before the Thanksgiving deadline) (2026-11-18)
 - [x] real-calc Security CI fixed (Puma 8.0.2 -> 8.1.2) (2026-11-18)
-- [x] Kamal config for real-calc (Postgres + nightly pg_dump accessories, server-side build, ghcr.io); kamal setup took 4 minutes; realcalc.lyndbergh.net live with Let's Encrypt HTTPS (2026-11-18)
 
 ### Future iterations
 
@@ -400,7 +398,6 @@ What I'm working on now, what's next, and where each project goes from here.
 | [abchealth-swiftapp](#abchealth-swiftapp) | Sentry plus a unit test target (planned by 2026-11-15); CI for xcodebuild |
 | [playlist-video-converter](#playlist-video-converter) | git init and push, then CI; A golden set of playlists to measure precision and recall |
 | [abchealth-expressjs](#abchealth-expressjs) | Logging and uptime checks; Move the cron to Vercel Cron |
-| [Portfolio](#portfolio) | Move off CRA (deprecated) to Vite |
 | [lyndbergh-platform](#lyndbergh-platform) | PR review agents |
 
 ## Archive

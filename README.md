@@ -50,7 +50,7 @@ flowchart LR
 
 *2026-11 → now · Solo engineer: architecture, backend, frontend, infra* · [repo (private)](https://github.com/Lsimelus/real-calc) · [live](https://realcalc.lyndbergh.net)
 
-**Status:** Built and tested. 2026-11-12: AWS stack applied (57 resources) in the management account as a stopgap; HTTPS live at https://realcalc.lyndbergh.net, but AWS blocks ECS for the account, so no container runs yet. Decided 2026-11-13 to stay on AWS and wait for Support to lift the block (a VPS + Kamal + Neon setup was built, then dropped). AI advisor built, off for now.
+**Status:** Live at https://realcalc.lyndbergh.net since 2026-11-18 on a Hetzner VPS (Kamal, Postgres on the server with nightly backups). Moved off AWS after an account-level ECS block (decision 0013). Advisor built, off until a Qwen host is chosen.
 
 > Real Calc helps home buyers answer two questions: what can I afford, and where should I look. It's a mortgage calculator plus a location explorer that ranks US cities 0–100 on ten factors (affordability, growth, rental yield, tax, crime, disaster risk and more) using Zillow, FRED, FEMA, FBI and Census data. I rebuilt it from a FastAPI backend plus a Next.js client into one Rails modular monolith that serves the React SPA, and it deploys to AWS (ECS Fargate, RDS) through Terraform and GitHub Actions with OIDC.
 
@@ -112,6 +112,7 @@ Arrows point to what a component may call; Packwerk enforces them (no cycles). R
 - **Stopgap: deploy into the Organization's management account.** The Organizations account quota is 1, so the real-calc member account can't be created yet. The Terraform reads the account from the caller, so only the profile changed. On 2026-11-18 AWS declined to raise it (limited usage history), so the stopgap stays until I can re-request. *Trade-off:* Breaks my own one-account-per-app rule: SCPs don't apply to the management account, and moving later means an RDS snapshot copy, new cert and DNS swap.
 - **Stay on AWS instead of a $6 VPS (2026-11-13).** I priced the alternatives (AWS ~$65-70/month, VPS + Kamal + Neon ~$6-12, Vercel split) and built the VPS setup, then chose AWS for production-grade infrastructure and the hands-on experience employers ask for. *Trade-off:* About $60 a month more with no users yet, plus account friction (quota, ECS block).
 - **Trust GitHub's immutable OIDC subject.** The repo's tokens say repo:Lsimelus@45671470/real-calc@1442215665:..., so trust policies match owner and repo IDs. A renamed or re-created repo can't assume the roles. *Trade-off:* The subject is less readable; the variable documents how to look it up with gh api.
+- **Off AWS to one Hetzner VPS with Kamal (2026-11-18).** AWS blocked ECS for the account for a week and denied the account-quota increase. A ~$7/month VPS runs the same container with Rails 8's own deploy tool, and the first deploy took 4 minutes. *Trade-off:* I run the server myself (updates, backups), and the server is in Finland, so HUD's API (US-only) is fetched on my Mac yearly and uploaded as a file.
 
 **Numbers**
 
@@ -124,6 +125,7 @@ Arrows point to what a component may call; Packwerk enforces them (no cycles). R
 - Deploy: CI → ECR → migrate as a one-off task → rolling ECS update with /health check
 - Production data measured 2026-11-13: 570 MB right after the load, 211 MB after VACUUM FULL (Neon free cap 0.5 GB)
 - Hosting cost compared: AWS ~$65-70/month running (~$27 idle) vs VPS + Neon ~$6-12
+- Production coverage after the first load: every ranking factor above 92% (rental yield 99.3%, safety 98.2%, tax 95.1%) across 29,717 places
 
 **Hard parts**
 
@@ -435,13 +437,12 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### In progress
 
-- [ ] real-calc v1 live on a Kamal VPS (Hetzner, ~€5-10/month) instead of AWS: create the server, Postgres on it with daily backups, kamal setup, first data load, check /health and sign-in. Keep the Terraform/AWS build as the story (built it, hit an account block, moved to a portable setup) — due Thanksgiving 2026-11-26
 - [ ] Add error tracking, structured logs and one alert to real-calc, and fill in its links row — part of real-calc v1, due 2026-11-26
 - [ ] Turn on real-calc's location advisor on Bedrock from the VPS (IAM user allowed only InvokeModel on the Claude models, key in Kamal secrets, AWS Budgets alert), then ship its eval suite (golden test set + scored runs) — due 2026-12-31
 
 ### Up next
 
-- [ ] Deploy step 4: run the first data load (kamal refresh), add https://realcalc.lyndbergh.net/auth/google_oauth2/callback to the Google sign-in client and test sign-in, turn on Hetzner Backups and attach a 'web' firewall (TCP 22/80/443 + ICMP), switch the deploy and market-data workflows from ECS to Kamal, replace the GitHub token (it was pasted in chat), then tear down the AWS stack (~$27/month idle; keep the Terraform code). DNS already points at the VPS.
+- [ ] Finish the move off AWS: set the GitHub secrets so the Market data workflow refreshes over SSH (then test it), switch real-calc's deploy workflow from ECS to Kamal and merge deploy/kamal-vps into main, turn on Hetzner Backups and attach a 'web' firewall (TCP 22/80/443 + ICMP), replace the GitHub token (pasted in chat), then tear down the AWS stack (~$27/month idle; keep the Terraform code)
 - [ ] Deploy lyndbergh-platform with Kamal on the same VPS as real-calc, with daily SQLite backups and a free healthchecks.io heartbeat so I still hear about it if the server goes down
 - [ ] Write a runbook for real-calc on the VPS: deploy (kamal deploy), rollback (kamal rollback), restore Postgres from the daily backup — after real-calc v1 is live
 - [ ] Commit the dev-port changes in real-calc, real-calc-client, abchealth-expressjs, fastapi-postgres and Portfolio, and decide whether to keep the two openapi.yaml files
@@ -468,11 +469,11 @@ What I'm working on now, what's next, and where each project goes from here.
 
 ### Recently done
 
+- [x] real-calc v1 live on a Hetzner VPS with Kamal: https://realcalc.lyndbergh.net, Let's Encrypt HTTPS, Postgres + nightly pg_dump, 29,717 places, 27/28 datasets with every ranking factor above 92% coverage, Google sign-in working (8 days before the Thanksgiving deadline) (2026-11-18)
 - [x] real-calc Security CI fixed (Puma 8.0.2 -> 8.1.2) (2026-11-18)
 - [x] Kamal config for real-calc (Postgres + nightly pg_dump accessories, server-side build, ghcr.io); kamal setup took 4 minutes; realcalc.lyndbergh.net live with Let's Encrypt HTTPS (2026-11-18)
 - [x] Hetzner server created (CX22, Helsinki, 46.62.241.225), SSH key and GitHub token set up (2026-11-18)
 - [x] data:refresh ends with VACUUM ANALYZE so the database stops growing each month (commit 5970785) (2026-11-13)
-- [x] Write an ADR for the FastAPI → Rails modular monolith decision (2026-11-08)
 
 ### Future iterations
 

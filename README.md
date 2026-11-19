@@ -438,7 +438,7 @@ What I'm working on now, what's next, and where each project goes from here.
 ### In progress
 
 - [ ] Add error tracking, structured logs and one alert to real-calc, and fill in its links row — part of real-calc v1, due 2026-11-26
-- [ ] Turn on real-calc's location advisor on Bedrock from the VPS (IAM user allowed only InvokeModel on the Claude models, key in Kamal secrets, AWS Budgets alert), then ship its eval suite (golden test set + scored runs) — due 2026-12-31
+- [ ] Turn on real-calc's location advisor on Qwen 27B (decision 0013): pick an OpenAI-compatible host (OpenRouter, Together, Alibaba Model Studio or self-hosted), add ADVISOR_API_BASE / ADVISOR_API_KEY / ADVISOR_MODEL to the Kamal secrets, name the host on the privacy page, then ship the eval suite (golden test set + scored runs, incl. tool use and Fair Housing behaviour) — due 2026-12-31
 
 ### Up next
 

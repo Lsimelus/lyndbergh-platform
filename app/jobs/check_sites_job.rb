@@ -1,4 +1,4 @@
-# Checks every site; runs every 5 minutes (config/recurring.yml). Keeps 30 days of checks and 90 of traffic.
+# Checks every site; runs every 5 minutes (config/recurring.yml). Keeps 30 days of checks.
 # Alerts when a site goes down or comes back.
 class CheckSitesJob < ApplicationJob
   def perform
@@ -7,6 +7,5 @@ class CheckSitesJob < ApplicationJob
       Alert.status_changed(site, previous: previous, current: Check.run(site))
     end
     Check.prune
-    TrafficMinute.prune
   end
 end

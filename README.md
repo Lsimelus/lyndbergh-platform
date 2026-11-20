@@ -90,22 +90,6 @@ A Rails 8 app (SQLite, Solid Queue) with four parts.
 
 **Site monitor.** Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency. The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
 
-**Traffic** (`/traffic`, admin sign-in). Requests, 4xx/5xx errors and response times per site, per hour for
-the last day and per day for the last 30, for every site on the server (Portfolio's traffic is in Vercel Analytics).
-The numbers come from kamal-proxy's request log: `script/traffic-collector` runs on the server from cron every
-5 minutes, adds up the new lines per site and minute, and posts the totals to `POST /api/traffic` with
-`TRAFFIC_TOKEN`. Only counts are stored (no IPs, user agents or paths), kept 90 days. Health checks and this app's own
-monitor are left out.
-
-Install the collector on the server once (the same token goes in the platform's `.env.production`):
-
-```bash
-scp script/traffic-collector root@$KAMAL_HOST:/usr/local/bin/traffic-collector
-ssh root@$KAMAL_HOST 'printf "TRAFFIC_URL=https://platform.lyndbergh.net/api/traffic\nTRAFFIC_TOKEN=<token>\n" > /etc/traffic-collector.env &&
-  chmod 600 /etc/traffic-collector.env &&
-  echo "*/5 * * * * root /usr/local/bin/traffic-collector >>/var/log/traffic-collector.log 2>&1" > /etc/cron.d/traffic-collector'
-```
-
 ### Running it
 
 ```bash
@@ -126,7 +110,7 @@ It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzn
 (gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `ADMIN_EMAILS` (the admin sign-in; Google redirect URI
 `https://platform.lyndbergh.net/auth/google_oauth2/callback`; the status page and API are public), `ALERT_URL` (ntfy.sh
-topic for down/up pushes) and `TRAFFIC_TOKEN` (the traffic collector's token).
+topic for down/up pushes).
 A scheduled GitHub Actions workflow calls `/api/heartbeat` every 10 minutes and pushes to the same
 topic (repo secret `ALERT_URL`) if the server is down or its checks stopped. SQLite lives in the `lyndbergh_platform_storage` volume and a
 nightly job copies it to `storage/backups` (14 days kept).

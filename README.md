@@ -64,7 +64,7 @@ What I'm working on, in order, and what comes after.
 
 - [x] AWS emptied: deleted the real-calc-final RDS snapshot (~$1.90/month), Terraform state bucket, and two 2021 Amplify apps with their buckets, stacks and roles (2026-11-20)
 - [x] New Relic alerts: ping monitors (Real Calc, ABChealth, Platform, Portfolio; 2 locations, every 5 min) and a Production policy (site down, 5xx, error logs, iOS crash) emailing me (2026-11-20)
-- [x] Platform: removed /traffic, the server's traffic collector cron and traffic_minutes (New Relic covers the apps); Ruby 4.0.10 for CVE-2026-132825 (PR #6) (2026-11-20)
+- [x] Platform: removed /traffic, the server's traffic collector cron and traffic_minutes (New Relic covers the apps); Ruby 4.0.10 for CVE-2026-132825 on the platform (PR #6) and real-calc (PR #25) (2026-11-20)
 - [x] New Relic logs: real-calc (Rails.logger via OpenTelemetry logs) and ABChealth site (console → OTel) send logs with trace ids; admin emails no longer logged (real-calc #23, abchealth #6) (2026-11-20)
 - [x] ABChealth iOS crash reporting: New Relic Mobile (crashes only, no session replay), dSYM upload on Release builds, Xcode project in git (PR #2) (2026-11-20)
 

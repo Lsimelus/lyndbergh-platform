@@ -49,7 +49,7 @@ What I'm working on now and what's next.
 
 ## Platform app
 
-A Rails 8 app (SQLite, Solid Queue) with three parts.
+A Rails 8 app (SQLite, Solid Queue) with four parts.
 
 **Shared endpoints.** Anything more than one site needs lives here. Schemas, responses and the event-log format: [docs/schemas.md](docs/schemas.md).
 
@@ -61,6 +61,22 @@ A Rails 8 app (SQLite, Solid Queue) with three parts.
 **Forms page** (`/forms`, password-protected). Contact messages, newest first, each with a Reply link, and feedback grouped by site with the average rating, how ratings are spread across 1–5, and recent comments. Set `ADMIN_PASSWORD` (and optionally `ADMIN_USER`, default `admin`); without it the page is locked everywhere except on my machine.
 
 **Site monitor.** Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency. The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
+
+**Traffic** (`/traffic`, password-protected). Requests, 4xx/5xx errors and response times per site, per hour for
+the last day and per day for the last 30, for every site on the server (Portfolio's traffic is in Vercel Analytics).
+The numbers come from kamal-proxy's request log: `script/traffic-collector` runs on the server from cron every
+5 minutes, adds up the new lines per site and minute, and posts the totals to `POST /api/traffic` with
+`TRAFFIC_TOKEN`. Only counts are stored (no IPs, user agents or paths), kept 90 days. Health checks and this app's own
+monitor are left out.
+
+Install the collector on the server once (the same token goes in the platform's `.env.production`):
+
+```bash
+scp script/traffic-collector root@$KAMAL_HOST:/usr/local/bin/traffic-collector
+ssh root@$KAMAL_HOST 'printf "TRAFFIC_URL=https://platform.lyndbergh.net/api/traffic\nTRAFFIC_TOKEN=<token>\n" > /etc/traffic-collector.env &&
+  chmod 600 /etc/traffic-collector.env &&
+  echo "*/5 * * * * root /usr/local/bin/traffic-collector >>/var/log/traffic-collector.log 2>&1" > /etc/cron.d/traffic-collector'
+```
 
 ### Running it
 

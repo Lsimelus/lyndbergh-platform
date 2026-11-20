@@ -16,7 +16,7 @@ Site = Data.define(:slug, :name, :url, :health_path, :repo, :expect, :traffic, :
       "Repo" => "https://github.com/#{repo}",
       "CI" => "https://github.com/#{repo}/actions",
       "Dependabot" => "https://github.com/#{repo}/security/dependabot",
-      "Traffic" => traffic,
+      "Traffic" => traffic || "/traffic##{slug}", # Vercel for Portfolio; the platform's /traffic for sites on the server
       "Admin" => admin
     }.compact
   end

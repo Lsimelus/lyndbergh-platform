@@ -31,6 +31,7 @@ env:
     - RAILS_MASTER_KEY
     - ADMIN_PASSWORD
     - ALERT_URL
+    - TRAFFIC_TOKEN    # script/traffic-collector's bearer token for POST /api/traffic
 
 # SQLite databases and their nightly backups (storage/backups) live in this Docker volume.
 volumes:

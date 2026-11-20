@@ -9,32 +9,60 @@ My roadmap, plus the small Rails app behind my sites: it monitors every site and
 
 ## Roadmap
 
-What I'm working on now and what's next.
+What I'm working on, in order, and what comes after.
 
-### In progress
+### Before 2027
 
-- [ ] Turn on real-calc's location advisor on Qwen 27B (decision 0013): pick an OpenAI-compatible host (OpenRouter, Together, Alibaba Model Studio or self-hosted), add ADVISOR_API_BASE / ADVISOR_API_KEY / ADVISOR_MODEL to the Kamal secrets, name the host on the privacy page, then ship the eval suite (golden test set + scored runs, incl. tool use and Fair Housing behaviour) — due 2026-12-31
+*In order. Goals: ABChealth submitted to App Review, and the real-calc advisor tested and live in production.*
 
-### Up next
+- [ ] New Relic, real-calc: merge PR #22 (advisor spans), turn tracing on in production (OTEL_* in .env.production), and send real-calc's JSON logs to New Relic so logs sit next to traces
+- [ ] New Relic, ABChealth site: OpenTelemetry for Node (Express, Postgres, outgoing HTTP auto-instrumented) to New Relic, plus one JSON log line per request
+- [ ] New Relic, ABChealth iOS: decide crash reporting — New Relic Mobile (one tool) vs the Sentry already wired in — and set it up before TestFlight
+- [ ] New Relic alerts: 5xx rate, slow responses, advisor turn failures and app crashes → email + ntfy; decide which failures go through New Relic vs real-calc's own alert vs Resend
+- [ ] Clean up: retire real-calc Admin → Telemetry (request_metrics) now that New Relic has it; remove unused libraries (opentelemetry-instrumentation-all → only what's used, old majors); delete old data (AWS RDS final snapshot + Terraform state bucket, leftover Neon references)
+- [ ] Refine logs: one JSON event format across real-calc, ABChealth and the platform; drop noisy lines; never log personal data; check them in New Relic
+- [ ] Slim the platform, no redundancy: keep status/uptime monitor, ntfy + heartbeat, contact/feedback endpoints, /forms and sign-in; remove /traffic and the server collector once New Relic covers real-calc and ABChealth; drop anything else New Relic now does
+- [ ] Advisor eval on OpenRouter: add ~$5 credit; eval/cases.yml (~15 questions incl. Fair Housing) + bin/rails location_advisor:eval with a scorecard; measure tokens per question and set the monthly budget from it
+- [ ] Advisor work until it's ready to deploy: fix what the evals catch, name OpenRouter on real-calc's privacy page, admin cost per user, rerun evals until they pass
+- [ ] Review the whole suite (all repos, CI, deploys, monitoring, docs) for improvements before launch
+- [ ] Secrets before the advisor goes to production: rotate everything pasted in chat (GitHub token → write:packages only, ABChealth Google OAuth secret, OpenRouter key, New Relic license key, YouTube dev key) and move .env.production files into a secret manager Kamal can read (1Password, Bitwarden or Doppler)
+- [ ] Advisor to production: production OpenRouter key with a monthly cap, ADVISOR_ENABLED, tracing on; watch the first real turns in New Relic
+- [ ] ABChealth: enroll in the Apple Developer Program (moved up to December so review can happen before 2027)
+- [ ] ABChealth: production Supabase checks (auth redirects, Google provider) and a full simulator test against production
+- [ ] ABChealth: Sign in with Apple (App Store rule 4.8: apps offering Google sign-in must offer Apple too) + Supabase Apple provider
+- [ ] ABChealth: wire or delete the 3 unreachable screens (Create post, Activity, Profile); simulator screenshots; App Review demo account
+- [ ] ABChealth: TestFlight build on 2 iPhones, then submit for App Review — before 2027
+- [ ] ABChealth: finish retiring Vercel after 2026-12-19 (delete the Vercel project and its env vars, vercel.json, deploy/vercel-redirect.json, .vercel/, the build script)
 
-- [ ] Replace ABChealth's Google OAuth client secret (pasted in chat on 2026-11-18): Google Cloud → project real-calc-514120 → Credentials → the abchealth client → add a new secret, update abchealth-expressjs .env.production, deploy, then disable/delete the old secret; delete both client_secret_*.json files from Downloads
-- [ ] abchealth-expressjs: finish retiring Vercel (after 2026-12-19, once old links have had a month to move): delete the Vercel project and its env vars (old Neon URL, Google secret), then vercel.json, deploy/vercel-redirect.json, .vercel/ and the build script
-- [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
-- [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
-- [ ] ABChealth: enroll in the Apple Developer Program (launch option C, private-first, is chosen) (from 2027-01-01)
-- [ ] ABChealth [pre-Apple]: production Supabase has the 8 SQL files, RLS on every table and 12 articles (checked 2026-11-18); still to check: auth redirects + Google provider, then a full simulator test against prod (due 2026-12-31)
-- [ ] ABChealth: take simulator screenshots and create the App Review demo account (listing copy is drafted in AppStore/LISTING.md) (before submit, 2027-02-02)
-- [ ] ABChealth wire or delete the 3 unreachable screens (Create post, Activity, Profile) (before submit, 2027-02-02)
-- [ ] ABChealth [post-Apple]: set team + Sign in with Apple, add Supabase Apple provider, upload 1.0 (1) to TestFlight and test on 2 iPhones (January 2027)
-- [ ] ABChealth [post-Apple]: run an external TestFlight beta with 15-30 waitlist users; fix crashes only (January 2027)
-- [ ] ABChealth [post-Apple]: submit for review 2027-02-02, launch 2027-02-08, email the waitlist, watch crash reports for 48h
-- [ ] Race Me backend (raceMe-rails): models and race rules for distance, timed and multi-day races with Minitest tests, then the live RaceChannel and race lifecycle jobs (README build order 1–2)
-- [ ] Race Me iOS (raceMe-ios): SwiftUI app that joins a race by code, tracks the run with CoreLocation and shows live positions from the API
-- [ ] Watchmix deploy: watchmix.lyndbergh.net A record, production YouTube API key (server IP), replace the OAuth client secret + add the production redirect URI, Kamal config (Rails UI + converter accessory), add it to the platform's sites.yml, then start Google's OAuth verification and quota increase — due 2027-01-31
+### Once we have active users
 
-### Someday
+*Starts with the first real users of ABChealth or the advisor.*
 
-- [ ] ABChealth launch: upgrade Supabase to Pro ($25/month) before real users (free projects pause after ~a week idle)
+- [ ] Resend: verify lyndbergh.net (and ABChealth's domain), send password-reset emails to users through it (Supabase custom SMTP for ABChealth), and real-calc's admin alert emails
+- [ ] Failure notices: decide which failures email users (Resend) vs alert me (New Relic → email/ntfy), e.g. a failed save or advisor error
+- [ ] ABChealth: upgrade Supabase to Pro ($25/month) before real users — free projects pause after ~a week idle
+- [ ] ABChealth launch: external TestFlight beta with 15–30 waitlist users, release, email the waitlist, watch crashes for 48h
+- [ ] Advisor: raise per-user token budgets from real usage; watch cost per user
+
+### 2027
+
+*After the Apple Developer license and launches.*
+
+- [ ] Watchmix deploy (once the Apple Developer license exists): watchmix.lyndbergh.net, production YouTube API key (server IP), new OAuth secret, Kamal (Rails UI + converter accessory), add to the platform monitor; then Google OAuth verification and the YouTube quota increase
+- [ ] Watchmix: Apple Music reader and writer (MusicKit): read private playlists, save Apple Music video playlists
+- [ ] Watchmix: Sign in with Apple
+- [ ] Make sure the app works on iPad (ABChealth is iPhone-only today; confirm which app)
+- [ ] Dependabot auto-merge for patch/minor updates in real-calc, platform, Portfolio and Watchmix (replaces the upkeep agent)
+- [ ] PR review agent: Claude GitHub Action on Portfolio, then the other repos
+- [ ] Watchmix: decide whether to move the matcher and Apple parser into Rails (ADR 0001 note)
+
+### Race Me (on hold)
+
+*Don't start until the advisor is live in production or ABChealth is in the App Store.*
+
+- [ ] Race Me stack (proposal): Rails 8 API + Postgres, Solid Cable (live positions over WebSockets) + Solid Queue (race timers, finish detection); SwiftUI + CoreLocation + HealthKit; Sign in with Apple; APNs push; New Relic from day one; Kamal on its own small Hetzner server (the shared one is near its memory limit); reuse ABChealth's iOS and Supabase lessons
+- [ ] Race Me backend MVP: models and race rules (distance, timed, multi-day) with Minitest, then RaceChannel and race lifecycle jobs
+- [ ] Race Me iOS MVP: join a race by code, track the run with CoreLocation, show live positions
 
 ### Recently done
 

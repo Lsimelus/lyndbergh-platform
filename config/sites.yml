@@ -15,7 +15,6 @@
   health_path: /health
   repo: Lsimelus/real-calc
   expect: json
-  traffic: https://realcalc.lyndbergh.net/admin/telemetry
 
 - slug: abchealth
   name: ABCHealth

@@ -17,8 +17,7 @@ What I'm working on now and what's next.
 
 ### Up next
 
-- [ ] abchealth-expressjs: merge CI PR #1 (Jest, admin build, audit; also patches Express's critical/high advisories) into hosting-admin-kamal and deploy it
-- [ ] abchealth-expressjs: retire Vercel per README — deploy deploy/vercel-redirect.json to Vercel so old links forward to abchealth.lyndbergh.net; after 1–2 months delete the Vercel project (its env has the old Neon URL and Google secret), vercel.json, .vercel/ and the build script
+- [ ] abchealth-expressjs: finish retiring Vercel (after 2026-12-19, once old links have had a month to move): delete the Vercel project and its env vars (old Neon URL, Google secret), then vercel.json, deploy/vercel-redirect.json, .vercel/ and the build script
 - [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
 - [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
 - [ ] ABChealth: enroll in the Apple Developer Program (launch option C, private-first, is chosen) (from 2027-01-01)
@@ -38,11 +37,11 @@ What I'm working on now and what's next.
 
 ### Recently done
 
+- [x] abchealth-expressjs: CI (53 Jest tests, admin build, audit of shipped deps) and Express 4.22.3 patching 1 critical + 3 high advisories, deployed to abchealth.lyndbergh.net (ea24c33) (2026-11-19)
+- [x] ABChealth: every abchealth-expressjs.vercel.app URL now 308-redirects to abchealth.lyndbergh.net (vercel.json on main, PRs #2/#3) (2026-11-19)
+- [x] real-calc infra/ leftovers removed (1.4 GB); Terraform bootstrap state kept in ~/Development/backups (2026-11-19)
 - [x] Hetzner hardening: Backups on, 'web' firewall (only 22/80/443 + ICMP reachable from outside; all three sites and SSH still work), GitHub registry token replaced in all three apps (2026-11-19)
 - [x] real-calc monthly data refresh works from GitHub Actions: new restricted SSH key, production environment secrets, VPS_HOST repo variable; test run refreshed FHFA in production. Stale AWS repo variables removed. (2026-11-19)
-- [x] real-calc AWS teardown: terraform destroy (59 resources; RDS final snapshot kept), then infra/, infra.yml, AWS gems, the S3 path and the CloudWatch link removed (PR #17, deployed bbc1a22) (2026-11-19)
-- [x] Watchmix ADR 0001: record that Python's reason (ytmusicapi) is gone; after launch, decide whether to move the matcher and Apple parser into the Rails app (one runtime, one image) (Watchmix #2, Portfolio #1) (2026-11-19)
-- [x] Even out security scans: Brakeman for Watchmix's Rails UI, npm audit in Portfolio's and abchealth-expressjs's CI (Watchmix #2, Portfolio #1) (2026-11-19)
 
 *Generated from my `/next-level` notes.*
 

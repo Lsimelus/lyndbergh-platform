@@ -15,8 +15,6 @@ What I'm working on, in order, and what comes after.
 
 *In order. Goals: ABChealth submitted to App Review, and the real-calc advisor tested and live in production.*
 
-- [ ] ABChealth iOS CI: now that the Xcode project is in git, a GitHub Actions job that builds and runs the 21 unit tests on every PR (macOS runner minutes cost 10x; run on PRs only)
-- [ ] Slim the platform, no redundancy: once New Relic alerts work, decide whether its synthetic pings replace the platform uptime monitor + ntfy alerts; keep heartbeat, contact/feedback endpoints, /forms and sign-in
 - [ ] Advisor eval on OpenRouter: add ~$5 credit; eval/cases.yml (~15 questions incl. Fair Housing) + bin/rails location_advisor:eval with a scorecard; measure tokens per question and set the monthly budget from it
 - [ ] Advisor work until it's ready to deploy: fix what the evals catch, name OpenRouter on real-calc's privacy page, admin cost per user, rerun evals until they pass
 - [ ] Review the whole suite (all repos, CI, deploys, monitoring, docs) for improvements before launch
@@ -33,7 +31,7 @@ What I'm working on, in order, and what comes after.
 *Starts with the first real users of ABChealth or the advisor.*
 
 - [ ] Resend: verify lyndbergh.net (and ABChealth's domain), send password-reset emails to users through it (Supabase custom SMTP for ABChealth), and real-calc's admin alert emails
-- [ ] Failure notices: decide which failures email users (Resend) vs alert me (New Relic → email/ntfy), e.g. a failed save or advisor error
+- [ ] Failure notices: decide which failures email users (Resend) vs alert me (New Relic → email + ntfy, live), e.g. a failed save or advisor error
 - [ ] ABChealth: upgrade Supabase to Pro ($25/month) before real users — free projects pause after ~a week idle
 - [ ] ABChealth launch: external TestFlight beta with 15–30 waitlist users, release, email the waitlist, watch crashes for 48h
 - [ ] Advisor: raise per-user token budgets from real usage; watch cost per user
@@ -60,11 +58,11 @@ What I'm working on, in order, and what comes after.
 
 ### Recently done
 
+- [x] ABChealth iOS CI: macOS job builds and runs the 21 Swift Testing tests on PRs touching the app (~2.5 min, package cache, cancel superseded runs) (PR #4) (2026-11-20)
+- [x] Platform slimmed: New Relic owns alerting (email + ntfy push for site down, 5xx, error logs, iOS crash); removed the platform's own alerts, /api/heartbeat and the GitHub heartbeat; status page stays (PR #7) (2026-11-20)
 - [x] Refined logs: one request JSON shape across real-calc and ABChealth, parsed into New Relic attributes; health checks and boot noise gone; OTel SSL errors after Solid Queue forks fixed (real-calc #26) (2026-11-20)
 - [x] Cleanup: retired real-calc Admin → Telemetry and request_metrics (New Relic has it); instrumentation-all → 6 gems (-33 gems); 9 unused frontend packages; Neon references removed from ABChealth docs (#26, abchealth #8) (2026-11-20)
 - [x] AWS emptied: deleted the real-calc-final RDS snapshot (~$1.90/month), Terraform state bucket, and two 2021 Amplify apps with their buckets, stacks and roles (2026-11-20)
-- [x] New Relic alerts: ping monitors (Real Calc, ABChealth, Platform, Portfolio; 2 locations, every 5 min) and a Production policy (site down, 5xx, error logs, iOS crash) emailing me (2026-11-20)
-- [x] Platform: removed /traffic, the server's traffic collector cron and traffic_minutes (New Relic covers the apps); Ruby 4.0.10 for CVE-2026-132825 on the platform (PR #6) and real-calc (PR #25) (2026-11-20)
 
 *Generated from my `/next-level` notes.*
 

@@ -18,7 +18,6 @@ What I'm working on now and what's next.
 ### Up next
 
 - [ ] abchealth-expressjs: add a CI workflow that runs the Jest tests; remove .vercel/ and deploy/vercel-redirect.json once the Kamal branch merges
-- [ ] Finish real-calc's move to Hetzner: confirm the Market data workflow's SSH secrets are set and run it once, turn on Hetzner Backups, attach a 'web' firewall (TCP 22/80/443 + ICMP), replace the GitHub token (pasted in chat)
 - [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
 - [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
 - [ ] ABChealth: enroll in the Apple Developer Program (launch option C, private-first, is chosen) (from 2027-01-01)
@@ -38,11 +37,11 @@ What I'm working on now and what's next.
 
 ### Recently done
 
+- [x] Hetzner hardening: Backups on, 'web' firewall (only 22/80/443 + ICMP reachable from outside; all three sites and SSH still work), GitHub registry token replaced in all three apps (2026-11-19)
+- [x] real-calc monthly data refresh works from GitHub Actions: new restricted SSH key, production environment secrets, VPS_HOST repo variable; test run refreshed FHFA in production. Stale AWS repo variables removed. (2026-11-19)
 - [x] real-calc AWS teardown: terraform destroy (59 resources; RDS final snapshot kept), then infra/, infra.yml, AWS gems, the S3 path and the CloudWatch link removed (PR #17, deployed bbc1a22) (2026-11-19)
 - [x] Watchmix ADR 0001: record that Python's reason (ytmusicapi) is gone; after launch, decide whether to move the matcher and Apple parser into the Rails app (one runtime, one image) (Watchmix #2, Portfolio #1) (2026-11-19)
 - [x] Even out security scans: Brakeman for Watchmix's Rails UI, npm audit in Portfolio's and abchealth-expressjs's CI (Watchmix #2, Portfolio #1) (2026-11-19)
-- [x] Dependabot (dependencies + github-actions) for Portfolio, Watchmix and abchealth-expressjs, and bring their CI actions up to date (checkout v4/v5 → v7) (Watchmix #2, Portfolio #1) (2026-11-19)
-- [x] Portfolio cleanup: remove the unused react-pdf-viewer dependency and the stray build/ and frontend/ folders; add ESLint to CI like real-calc's frontend (or fix CLAUDE.md, which still says lint warnings fail the build) (Watchmix #2, Portfolio #1) (2026-11-19)
 
 *Generated from my `/next-level` notes.*
 

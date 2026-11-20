@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_20_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_20_200000) do
   create_table "checks", force: :cascade do |t|
     t.string "site_slug", null: false
     t.boolean "ok", null: false
@@ -44,17 +44,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_020000) do
     t.datetime "updated_at", null: false
     t.index ["site", "created_at"], name: "index_feedback_on_site_and_created_at"
     t.index ["site", "user_ref"], name: "index_feedback_on_site_and_user_ref"
-  end
-
-  create_table "traffic_minutes", force: :cascade do |t|
-    t.string "site_slug", null: false
-    t.datetime "minute", null: false
-    t.integer "requests", default: 0, null: false
-    t.integer "errors_4xx", default: 0, null: false
-    t.integer "errors_5xx", default: 0, null: false
-    t.float "total_ms", default: 0.0, null: false
-    t.float "max_ms", default: 0.0, null: false
-    t.index ["minute"], name: "index_traffic_minutes_on_minute"
-    t.index ["site_slug", "minute"], name: "index_traffic_minutes_on_site_slug_and_minute", unique: true
   end
 end

@@ -21,11 +21,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pages send people to sign in, then back where they were" do
-    get traffic_path
+    get forms_path
     assert_redirected_to sign_in_path
 
     google("owner@example.com")
-    assert_redirected_to traffic_path
+    assert_redirected_to forms_path
     follow_redirect!
     assert_response :success
     assert_select "button", "Sign out"

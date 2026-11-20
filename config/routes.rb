@@ -1,7 +1,6 @@
 Rails.application.routes.draw do
   root "status#index"
   get "forms" => "forms#index"
-  get "traffic" => "traffic#index"
   get "sign-in" => "sessions#new", as: :sign_in
   get "auth/google_oauth2/callback" => "sessions#create"
   delete "sign-out" => "sessions#destroy", as: :sign_out
@@ -11,6 +10,5 @@ Rails.application.routes.draw do
     post "contact-form", to: "contact_messages#create"
     post "feedback", to: "feedback#create"
     get "heartbeat", to: "heartbeat#show"
-    post "traffic", to: "traffic#create"
   end
 end

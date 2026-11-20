@@ -9,7 +9,7 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     Site.all.each { |site| assert_select "h2", site.name }
     assert_select ".error", "HTTP 503"
-    assert_select "a[href='/traffic#real-calc']", "Traffic"
+    assert_select "a[href='https://one.newrelic.com/nr1-core']", "Traffic"
     assert_select "a[href='https://abchealth.lyndbergh.net/admin/']", "Admin"
   end
 

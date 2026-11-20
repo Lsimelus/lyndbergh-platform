@@ -27,7 +27,6 @@
     <nav class="topnav page">
       <%= link_to "Status", root_path, class: ("current" if current_page?(root_path)) %>
       <%= link_to "Forms", forms_path, class: ("current" if current_page?(forms_path)) %>
-      <%= link_to "Traffic", traffic_path, class: ("current" if current_page?(traffic_path)) %>
       <% if current_admin %><%= button_to "Sign out", sign_out_path, method: :delete, form_class: "signout", class: "link" %><% end %>
     </nav>
     <%= yield %>

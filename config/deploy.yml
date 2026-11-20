@@ -33,7 +33,6 @@ env:
     - GOOGLE_CLIENT_SECRET
     - ADMIN_EMAILS          # who may sign in, comma separated
     - ALERT_URL
-    - TRAFFIC_TOKEN    # script/traffic-collector's bearer token for POST /api/traffic
 
 # SQLite databases and their nightly backups (storage/backups) live in this Docker volume.
 volumes:

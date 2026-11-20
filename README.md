@@ -31,7 +31,6 @@ What I'm working on, in order, and what comes after.
 - [ ] ABChealth: Sign in with Apple (App Store rule 4.8: apps offering Google sign-in must offer Apple too) + Supabase Apple provider
 - [ ] ABChealth: wire or delete the 3 unreachable screens (Create post, Activity, Profile); simulator screenshots; App Review demo account
 - [ ] ABChealth: TestFlight build on 2 iPhones, then submit for App Review — before 2027
-- [ ] ABChealth: delete the old Vercel project (abchealth-expressjs) once Supabase Auth's Site URL and redirect list point at abchealth.lyndbergh.net; remove the old vercel.app redirect URI from the Google client
 
 ### Once we have active users
 
@@ -65,11 +64,11 @@ What I'm working on, in order, and what comes after.
 
 ### Recently done
 
+- [x] ABChealth's old Vercel project deleted (old address 404; its stored Neon URL and Google secret gone); Supabase Auth URLs moved to abchealth.lyndbergh.net (2026-11-20)
 - [x] New Relic, ABChealth site: tracing (HTTP, Express, Postgres, outgoing calls; ~37 MB) + one JSON log line per request, deployed (6f93468) (2026-11-20)
 - [x] Old Vercel address removed everywhere: Portfolio links (live), iOS websiteURL, ABChealth docs/openapi; Vercel-only build script and redirect file deleted (2026-11-20)
 - [x] New Relic, real-calc: tracing live in production (PR #22, 6fdedc7): requests, SQL (values masked), model calls, and advisor.turn / advisor.tool spans (2026-11-20)
 - [x] lyndbergh-platform /traffic: kamal-proxy log → per-minute totals every 5 min (cron collector), requests/errors/latency per site, 90 days; replaces real-calc's broken Telemetry link (PR #4) (2026-11-19)
-- [x] lyndbergh-platform admin sign-in: Google, only ADMIN_EMAILS with verified address, 7-day sessions, replaces the shared password (PR #5) (2026-11-19)
 
 *Generated from my `/next-level` notes.*
 

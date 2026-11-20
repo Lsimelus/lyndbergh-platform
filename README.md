@@ -15,8 +15,6 @@ What I'm working on, in order, and what comes after.
 
 *In order. Goals: ABChealth submitted to App Review, and the real-calc advisor tested and live in production.*
 
-- [ ] New Relic, real-calc: send its JSON request logs to New Relic so logs sit next to traces (pick the cheapest way: OTLP logs from Rails vs a log forwarder on the server)
-- [ ] ABChealth iOS crash reporting with New Relic Mobile: merge PR #2 (agent wired in, crashes only, Xcode project now in git), create the iOS app in New Relic and put its token in Config.xcconfig as NEW_RELIC_APP_TOKEN, add the dSYM upload step so crashes are readable, then one test crash visible in New Relic before TestFlight
 - [ ] ABChealth iOS CI: now that the Xcode project is in git, a GitHub Actions job that builds and runs the 21 unit tests on every PR (macOS runner minutes cost 10x; run on PRs only)
 - [ ] New Relic alerts: 5xx rate, slow responses, advisor turn failures and app crashes → email + ntfy; decide which failures go through New Relic vs real-calc's own alert vs Resend
 - [ ] Clean up: retire real-calc Admin → Telemetry (request_metrics) now that New Relic has it; remove unused libraries (opentelemetry-instrumentation-all → only what's used, old majors); delete old data (AWS RDS final snapshot + Terraform state bucket, leftover Neon references)
@@ -30,7 +28,7 @@ What I'm working on, in order, and what comes after.
 - [ ] ABChealth: enroll in the Apple Developer Program (moved up to December so review can happen before 2027)
 - [ ] ABChealth: production Supabase checks (auth redirects, Google provider) and a full simulator test against production
 - [ ] ABChealth: Sign in with Apple (App Store rule 4.8: apps offering Google sign-in must offer Apple too) + Supabase Apple provider
-- [ ] ABChealth: wire or delete the 3 unreachable screens (Create post, Activity, Profile); simulator screenshots; App Review demo account
+- [ ] ABChealth: wire or delete the 3 unreachable screens (Create post, Activity, Profile); simulator screenshots
 - [ ] ABChealth: TestFlight build on 2 iPhones, then submit for App Review — before 2027
 
 ### Once we have active users
@@ -65,11 +63,11 @@ What I'm working on, in order, and what comes after.
 
 ### Recently done
 
+- [x] New Relic logs: real-calc (Rails.logger via OpenTelemetry logs) and ABChealth site (console → OTel) send logs with trace ids; admin emails no longer logged (real-calc #23, abchealth #6) (2026-11-20)
+- [x] ABChealth iOS crash reporting: New Relic Mobile (crashes only, no session replay), dSYM upload on Release builds, Xcode project in git (PR #2) (2026-11-20)
+- [x] ABChealth App Review demo account seeded: goals, updates, saved/liked/read articles (PR #3) (2026-11-20)
 - [x] ABChealth's old Vercel project deleted (old address 404; its stored Neon URL and Google secret gone); Supabase Auth URLs moved to abchealth.lyndbergh.net (2026-11-20)
 - [x] New Relic, ABChealth site: tracing (HTTP, Express, Postgres, outgoing calls; ~37 MB) + one JSON log line per request, deployed (6f93468) (2026-11-20)
-- [x] Old Vercel address removed everywhere: Portfolio links (live), iOS websiteURL, ABChealth docs/openapi; Vercel-only build script and redirect file deleted (2026-11-20)
-- [x] New Relic, real-calc: tracing live in production (PR #22, 6fdedc7): requests, SQL (values masked), model calls, and advisor.turn / advisor.tool spans (2026-11-20)
-- [x] lyndbergh-platform /traffic: kamal-proxy log → per-minute totals every 5 min (cron collector), requests/errors/latency per site, 90 days; replaces real-calc's broken Telemetry link (PR #4) (2026-11-19)
 
 *Generated from my `/next-level` notes.*
 

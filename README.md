@@ -15,8 +15,7 @@ What I'm working on, in order, and what comes after.
 
 *In order. Goals: ABChealth submitted to App Review, and the real-calc advisor tested and live in production.*
 
-- [ ] New Relic, real-calc: merge PR #22 (advisor spans), turn tracing on in production (OTEL_* in .env.production), and send real-calc's JSON logs to New Relic so logs sit next to traces
-- [ ] New Relic, ABChealth site: OpenTelemetry for Node (Express, Postgres, outgoing HTTP auto-instrumented) to New Relic, plus one JSON log line per request
+- [ ] New Relic, real-calc: send its JSON request logs to New Relic so logs sit next to traces (pick the cheapest way: OTLP logs from Rails vs a log forwarder on the server)
 - [ ] New Relic, ABChealth iOS: decide crash reporting — New Relic Mobile (one tool) vs the Sentry already wired in — and set it up before TestFlight
 - [ ] New Relic alerts: 5xx rate, slow responses, advisor turn failures and app crashes → email + ntfy; decide which failures go through New Relic vs real-calc's own alert vs Resend
 - [ ] Clean up: retire real-calc Admin → Telemetry (request_metrics) now that New Relic has it; remove unused libraries (opentelemetry-instrumentation-all → only what's used, old majors); delete old data (AWS RDS final snapshot + Terraform state bucket, leftover Neon references)
@@ -32,7 +31,7 @@ What I'm working on, in order, and what comes after.
 - [ ] ABChealth: Sign in with Apple (App Store rule 4.8: apps offering Google sign-in must offer Apple too) + Supabase Apple provider
 - [ ] ABChealth: wire or delete the 3 unreachable screens (Create post, Activity, Profile); simulator screenshots; App Review demo account
 - [ ] ABChealth: TestFlight build on 2 iPhones, then submit for App Review — before 2027
-- [ ] ABChealth: finish retiring Vercel after 2026-12-19 (delete the Vercel project and its env vars, vercel.json, deploy/vercel-redirect.json, .vercel/, the build script)
+- [ ] ABChealth: delete the old Vercel project (abchealth-expressjs) once Supabase Auth's Site URL and redirect list point at abchealth.lyndbergh.net; remove the old vercel.app redirect URI from the Google client
 
 ### Once we have active users
 
@@ -66,11 +65,11 @@ What I'm working on, in order, and what comes after.
 
 ### Recently done
 
+- [x] New Relic, ABChealth site: tracing (HTTP, Express, Postgres, outgoing calls; ~37 MB) + one JSON log line per request, deployed (6f93468) (2026-11-20)
+- [x] Old Vercel address removed everywhere: Portfolio links (live), iOS websiteURL, ABChealth docs/openapi; Vercel-only build script and redirect file deleted (2026-11-20)
+- [x] New Relic, real-calc: tracing live in production (PR #22, 6fdedc7): requests, SQL (values masked), model calls, and advisor.turn / advisor.tool spans (2026-11-20)
 - [x] lyndbergh-platform /traffic: kamal-proxy log → per-minute totals every 5 min (cron collector), requests/errors/latency per site, 90 days; replaces real-calc's broken Telemetry link (PR #4) (2026-11-19)
 - [x] lyndbergh-platform admin sign-in: Google, only ADMIN_EMAILS with verified address, 7-day sessions, replaces the shared password (PR #5) (2026-11-19)
-- [x] abchealth-expressjs: CI (53 Jest tests, admin build, audit of shipped deps) and Express 4.22.3 patching 1 critical + 3 high advisories, deployed to abchealth.lyndbergh.net (ea24c33) (2026-11-19)
-- [x] ABChealth: every abchealth-expressjs.vercel.app URL now 308-redirects to abchealth.lyndbergh.net (vercel.json on main, PRs #2/#3) (2026-11-19)
-- [x] real-calc infra/ leftovers removed (1.4 GB); Terraform bootstrap state kept in ~/Development/backups (2026-11-19)
 
 *Generated from my `/next-level` notes.*
 

@@ -9,6 +9,5 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     post "contact-form", to: "contact_messages#create"
     post "feedback", to: "feedback#create"
-    get "heartbeat", to: "heartbeat#show"
   end
 end

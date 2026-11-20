@@ -83,7 +83,7 @@ A Rails 8 app (SQLite, Solid Queue) with four parts.
 
 **Forms page** (`/forms`, admin sign-in). Contact messages, newest first, each with a Reply link, and feedback grouped by site with the average rating, how ratings are spread across 1–5, and recent comments. Sign in with Google: only `ADMIN_EMAILS` (comma separated) with a Google-verified address get in, for 7 days (`/sign-in`, *Sign out* in the nav). Without `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` the page is locked everywhere except on my machine.
 
-**Site monitor.** Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency. The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
+**Site monitor.** Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency for the public status page (alerts come from New Relic). The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
 
 ### Running it
 
@@ -104,10 +104,9 @@ It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzn
 (its own container behind the shared kamal-proxy). `bin/prod` wraps Kamal and loads `.env.production`
 (gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `ADMIN_EMAILS` (the admin sign-in; Google redirect URI
-`https://platform.lyndbergh.net/auth/google_oauth2/callback`; the status page and API are public), `ALERT_URL` (ntfy.sh
-topic for down/up pushes).
-A scheduled GitHub Actions workflow calls `/api/heartbeat` every 10 minutes and pushes to the same
-topic (repo secret `ALERT_URL`) if the server is down or its checks stopped. SQLite lives in the `lyndbergh_platform_storage` volume and a
+`https://platform.lyndbergh.net/auth/google_oauth2/callback`; the status page and API are public).
+Alerts aren't sent from here: New Relic pings every site (this one included) and emails and pushes (ntfy) when one is
+down, throws 5xx errors or logs errors. SQLite lives in the `lyndbergh_platform_storage` volume and a
 nightly job copies it to `storage/backups` (14 days kept).
 
 ```bash
@@ -133,10 +132,10 @@ Each repo has its own port so they can all run at once.
 ### TODO
 
 - [x] Deploy it with Kamal on the same VPS as real-calc, with nightly SQLite backups.
-- [x] A heartbeat from outside (GitHub Actions → `/api/heartbeat` every 10 minutes) so a dead server still alerts me.
+- [x] A heartbeat from outside so a dead server still alerts me (now New Relic ping monitors; the GitHub Actions heartbeat is retired).
 - [x] Add it to the Portfolio (as "Ops Platform").
 - [ ] PR-review agents on the Anthropic API (Managed Agents), after real-calc's advisor ships with its eval.
-- [x] Alert when a site goes down or comes back (`ALERT_URL`, an ntfy.sh topic: push to my phone).
+- [x] Alert when a site goes down or comes back (now New Relic → email and ntfy push; the platform's own alerts are retired).
 - [x] Contact form and feedback endpoints, with rate limiting and a honeypot.
 - [x] Copy the old messages from fastapi-postgres (39 imported 2026-11-18).
 - [x] Point the Portfolio's `REACT_APP_API_URL` here (Vercel env only) and retire the FastAPI backend.

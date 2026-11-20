@@ -1,11 +1,8 @@
-# Checks every site; runs every 5 minutes (config/recurring.yml). Keeps 30 days of checks.
-# Alerts when a site goes down or comes back.
+# Checks every site for the public status page; runs every 5 minutes (config/recurring.yml). Keeps 30 days of checks.
+# Alerting (site down, errors, crashes) is New Relic's job: ping monitors and alert policies, to email and ntfy.
 class CheckSitesJob < ApplicationJob
   def perform
-    Site.all.each do |site|
-      previous = site.checks.recent.first
-      Alert.status_changed(site, previous: previous, current: Check.run(site))
-    end
+    Site.all.each { |site| Check.run(site) }
     Check.prune
   end
 end

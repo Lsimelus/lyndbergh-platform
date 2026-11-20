@@ -16,7 +16,7 @@ What I'm working on, in order, and what comes after.
 *In order. Goals: ABChealth submitted to App Review, and the real-calc advisor tested and live in production.*
 
 - [ ] ABChealth iOS CI: now that the Xcode project is in git, a GitHub Actions job that builds and runs the 21 unit tests on every PR (macOS runner minutes cost 10x; run on PRs only)
-- [ ] Clean up: retire real-calc Admin → Telemetry (request_metrics) now that New Relic has it; remove unused libraries (opentelemetry-instrumentation-all → only what's used, old majors); delete old data (AWS RDS final snapshot + Terraform state bucket, leftover Neon references)
+- [ ] Clean up: retire real-calc Admin → Telemetry (request_metrics) now that New Relic has it; remove unused libraries (opentelemetry-instrumentation-all → only what's used, old majors); remove leftover Neon references (e.g. ABChealth ARCHITECTURE.md backups line)
 - [ ] Refine logs: one JSON event format across real-calc, ABChealth and the platform; drop noisy lines; never log personal data; check them in New Relic; real-calc: 4 OTel SSL errors at boot (Puma workers reuse the parent's exporter connection after fork), so flush/reset OTel in Puma before_fork
 - [ ] Slim the platform, no redundancy: once New Relic alerts work, decide whether its synthetic pings replace the platform uptime monitor + ntfy alerts; keep heartbeat, contact/feedback endpoints, /forms and sign-in
 - [ ] Advisor eval on OpenRouter: add ~$5 credit; eval/cases.yml (~15 questions incl. Fair Housing) + bin/rails location_advisor:eval with a scorecard; measure tokens per question and set the monthly budget from it
@@ -62,11 +62,11 @@ What I'm working on, in order, and what comes after.
 
 ### Recently done
 
+- [x] AWS emptied: deleted the real-calc-final RDS snapshot (~$1.90/month), Terraform state bucket, and two 2021 Amplify apps with their buckets, stacks and roles (2026-11-20)
 - [x] New Relic alerts: ping monitors (Real Calc, ABChealth, Platform, Portfolio; 2 locations, every 5 min) and a Production policy (site down, 5xx, error logs, iOS crash) emailing me (2026-11-20)
 - [x] Platform: removed /traffic, the server's traffic collector cron and traffic_minutes (New Relic covers the apps); Ruby 4.0.10 for CVE-2026-132825 (PR #6) (2026-11-20)
 - [x] New Relic logs: real-calc (Rails.logger via OpenTelemetry logs) and ABChealth site (console → OTel) send logs with trace ids; admin emails no longer logged (real-calc #23, abchealth #6) (2026-11-20)
 - [x] ABChealth iOS crash reporting: New Relic Mobile (crashes only, no session replay), dSYM upload on Release builds, Xcode project in git (PR #2) (2026-11-20)
-- [x] ABChealth App Review demo account seeded: goals, updates, saved/liked/read articles (PR #3) (2026-11-20)
 
 *Generated from my `/next-level` notes.*
 

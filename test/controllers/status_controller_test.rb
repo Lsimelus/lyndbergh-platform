@@ -10,6 +10,7 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     Site.all.each { |site| assert_select "h2", site.name }
     assert_select ".error", "HTTP 503"
     assert_select "a[href='https://realcalc.lyndbergh.net/admin/telemetry']", "Traffic"
+    assert_select "a[href='https://abchealth.lyndbergh.net/admin/']", "Admin"
   end
 
   test "is public even when the admin password is set" do

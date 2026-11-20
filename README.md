@@ -13,18 +13,11 @@ What I'm working on now and what's next.
 
 ### In progress
 
-- [ ] Add error tracking, structured logs and one alert to real-calc, and fill in its links row — part of real-calc v1, due 2026-11-26
 - [ ] Turn on real-calc's location advisor on Qwen 27B (decision 0013): pick an OpenAI-compatible host (OpenRouter, Together, Alibaba Model Studio or self-hosted), add ADVISOR_API_BASE / ADVISOR_API_KEY / ADVISOR_MODEL to the Kamal secrets, name the host on the privacy page, then ship the eval suite (golden test set + scored runs, incl. tool use and Fair Housing behaviour) — due 2026-12-31
 
 ### Up next
 
-- [ ] Watchmix cleanup: delete prototype leftovers (demo.py, setup.sh, requirements-minimal.txt, requirements-simple.txt, test_imports.py, src/ai/embeddings*.py, SUCCESS.md, QUICKSTART.md, sample_playlist.json, the outdated ARCHITECTURE.md, empty dashboard/); after the Kamal deploy also docker-compose.yml and Caddyfile
-- [ ] real-calc: tear down the AWS stack (terraform destroy, keep RDS's final snapshot), then remove infra/, the infra.yml workflow, the Terraform Dependabot entry, the aws-sdk gems and the S3 branch in MarketData::Storage
-- [ ] Portfolio cleanup: remove the unused react-pdf-viewer dependency and the stray build/ and frontend/ folders; add ESLint to CI like real-calc's frontend (or fix CLAUDE.md, which still says lint warnings fail the build)
 - [ ] abchealth-expressjs: add a CI workflow that runs the Jest tests; remove .vercel/ and deploy/vercel-redirect.json once the Kamal branch merges
-- [ ] Dependabot (dependencies + github-actions) for Portfolio, Watchmix and abchealth-expressjs, and bring their CI actions up to date (checkout v4/v5 → v7)
-- [ ] Even out security scans: Brakeman for Watchmix's Rails UI, npm audit in Portfolio's and abchealth-expressjs's CI
-- [ ] Watchmix ADR 0001: record that Python's reason (ytmusicapi) is gone; after launch, decide whether to move the matcher and Apple parser into the Rails app (one runtime, one image)
 - [ ] Finish real-calc's move to Hetzner: confirm the Market data workflow's SSH secrets are set and run it once, turn on Hetzner Backups, attach a 'web' firewall (TCP 22/80/443 + ICMP), replace the GitHub token (pasted in chat)
 - [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
 - [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
@@ -42,6 +35,14 @@ What I'm working on now and what's next.
 ### Someday
 
 - [ ] ABChealth launch: upgrade Supabase to Pro ($25/month) before real users (free projects pause after ~a week idle)
+
+### Recently done
+
+- [x] real-calc AWS teardown: terraform destroy (59 resources; RDS final snapshot kept), then infra/, infra.yml, AWS gems, the S3 path and the CloudWatch link removed (PR #17, deployed bbc1a22) (2026-11-19)
+- [x] Watchmix ADR 0001: record that Python's reason (ytmusicapi) is gone; after launch, decide whether to move the matcher and Apple parser into the Rails app (one runtime, one image) (Watchmix #2, Portfolio #1) (2026-11-19)
+- [x] Even out security scans: Brakeman for Watchmix's Rails UI, npm audit in Portfolio's and abchealth-expressjs's CI (Watchmix #2, Portfolio #1) (2026-11-19)
+- [x] Dependabot (dependencies + github-actions) for Portfolio, Watchmix and abchealth-expressjs, and bring their CI actions up to date (checkout v4/v5 → v7) (Watchmix #2, Portfolio #1) (2026-11-19)
+- [x] Portfolio cleanup: remove the unused react-pdf-viewer dependency and the stray build/ and frontend/ folders; add ESLint to CI like real-calc's frontend (or fix CLAUDE.md, which still says lint warnings fail the build) (Watchmix #2, Portfolio #1) (2026-11-19)
 
 *Generated from my `/next-level` notes.*
 

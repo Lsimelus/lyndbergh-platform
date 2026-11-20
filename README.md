@@ -17,6 +17,7 @@ What I'm working on now and what's next.
 
 ### Up next
 
+- [ ] Replace ABChealth's Google OAuth client secret (pasted in chat on 2026-11-18): Google Cloud → project real-calc-514120 → Credentials → the abchealth client → add a new secret, update abchealth-expressjs .env.production, deploy, then disable/delete the old secret; delete both client_secret_*.json files from Downloads
 - [ ] abchealth-expressjs: finish retiring Vercel (after 2026-12-19, once old links have had a month to move): delete the Vercel project and its env vars (old Neon URL, Google secret), then vercel.json, deploy/vercel-redirect.json, .vercel/ and the build script
 - [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
 - [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
@@ -37,11 +38,11 @@ What I'm working on now and what's next.
 
 ### Recently done
 
+- [x] lyndbergh-platform /traffic: kamal-proxy log → per-minute totals every 5 min (cron collector), requests/errors/latency per site, 90 days; replaces real-calc's broken Telemetry link (PR #4) (2026-11-19)
+- [x] lyndbergh-platform admin sign-in: Google, only ADMIN_EMAILS with verified address, 7-day sessions, replaces the shared password (PR #5) (2026-11-19)
 - [x] abchealth-expressjs: CI (53 Jest tests, admin build, audit of shipped deps) and Express 4.22.3 patching 1 critical + 3 high advisories, deployed to abchealth.lyndbergh.net (ea24c33) (2026-11-19)
 - [x] ABChealth: every abchealth-expressjs.vercel.app URL now 308-redirects to abchealth.lyndbergh.net (vercel.json on main, PRs #2/#3) (2026-11-19)
 - [x] real-calc infra/ leftovers removed (1.4 GB); Terraform bootstrap state kept in ~/Development/backups (2026-11-19)
-- [x] Hetzner hardening: Backups on, 'web' firewall (only 22/80/443 + ICMP reachable from outside; all three sites and SSH still work), GitHub registry token replaced in all three apps (2026-11-19)
-- [x] real-calc monthly data refresh works from GitHub Actions: new restricted SSH key, production environment secrets, VPS_HOST repo variable; test run refreshed FHFA in production. Stale AWS repo variables removed. (2026-11-19)
 
 *Generated from my `/next-level` notes.*
 

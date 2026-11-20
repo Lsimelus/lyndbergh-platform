@@ -17,7 +17,8 @@ What I'm working on now and what's next.
 
 ### Up next
 
-- [ ] abchealth-expressjs: add a CI workflow that runs the Jest tests; remove .vercel/ and deploy/vercel-redirect.json once the Kamal branch merges
+- [ ] abchealth-expressjs: merge CI PR #1 (Jest, admin build, audit; also patches Express's critical/high advisories) into hosting-admin-kamal and deploy it
+- [ ] abchealth-expressjs: retire Vercel per README — deploy deploy/vercel-redirect.json to Vercel so old links forward to abchealth.lyndbergh.net; after 1–2 months delete the Vercel project (its env has the old Neon URL and Google secret), vercel.json, .vercel/ and the build script
 - [ ] PR review agent: install the Claude GitHub Action (/install-github-app) on Portfolio so every PR gets a review, then add it to real-calc, lyndbergh-platform, abchealth-expressjs and playlist-video-converter
 - [ ] Weekly upkeep agent: write lyndbergh-platform/agents/upkeep.md (merge safe Dependabot bumps once tests pass, open a fix PR for red CI) and run it as a weekly /schedule routine across the active repos
 - [ ] ABChealth: enroll in the Apple Developer Program (launch option C, private-first, is chosen) (from 2027-01-01)

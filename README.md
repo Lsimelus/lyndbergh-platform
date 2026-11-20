@@ -16,14 +16,13 @@ What I'm working on, in order, and what comes after.
 *In order. Goals: ABChealth submitted to App Review, and the real-calc advisor tested and live in production.*
 
 - [ ] ABChealth iOS CI: now that the Xcode project is in git, a GitHub Actions job that builds and runs the 21 unit tests on every PR (macOS runner minutes cost 10x; run on PRs only)
-- [ ] New Relic alerts: 5xx rate, slow responses, advisor turn failures and app crashes → email + ntfy; decide which failures go through New Relic vs real-calc's own alert vs Resend
 - [ ] Clean up: retire real-calc Admin → Telemetry (request_metrics) now that New Relic has it; remove unused libraries (opentelemetry-instrumentation-all → only what's used, old majors); delete old data (AWS RDS final snapshot + Terraform state bucket, leftover Neon references)
 - [ ] Refine logs: one JSON event format across real-calc, ABChealth and the platform; drop noisy lines; never log personal data; check them in New Relic; real-calc: 4 OTel SSL errors at boot (Puma workers reuse the parent's exporter connection after fork), so flush/reset OTel in Puma before_fork
 - [ ] Slim the platform, no redundancy: once New Relic alerts work, decide whether its synthetic pings replace the platform uptime monitor + ntfy alerts; keep heartbeat, contact/feedback endpoints, /forms and sign-in
 - [ ] Advisor eval on OpenRouter: add ~$5 credit; eval/cases.yml (~15 questions incl. Fair Housing) + bin/rails location_advisor:eval with a scorecard; measure tokens per question and set the monthly budget from it
 - [ ] Advisor work until it's ready to deploy: fix what the evals catch, name OpenRouter on real-calc's privacy page, admin cost per user, rerun evals until they pass
 - [ ] Review the whole suite (all repos, CI, deploys, monitoring, docs) for improvements before launch
-- [ ] Secrets before the advisor goes to production: rotate everything pasted in chat (GitHub token → write:packages only, ABChealth Google OAuth secret, OpenRouter key, New Relic license key, YouTube dev key) and move .env.production files into a secret manager Kamal can read (1Password, Bitwarden or Doppler)
+- [ ] Secrets before the advisor goes to production: rotate everything pasted in chat (GitHub token → write:packages only, ABChealth Google OAuth secret, OpenRouter key, New Relic license key, New Relic user key (NRAK), YouTube dev key) and move .env.production files into a secret manager Kamal can read (1Password, Bitwarden or Doppler)
 - [ ] Advisor to production: production OpenRouter key with a monthly cap, ADVISOR_ENABLED, tracing on; watch the first real turns in New Relic
 - [ ] ABChealth: enroll in the Apple Developer Program (moved up to December so review can happen before 2027)
 - [ ] ABChealth: production Supabase checks (auth redirects, Google provider) and a full simulator test against production
@@ -63,11 +62,11 @@ What I'm working on, in order, and what comes after.
 
 ### Recently done
 
+- [x] New Relic alerts: ping monitors (Real Calc, ABChealth, Platform, Portfolio; 2 locations, every 5 min) and a Production policy (site down, 5xx, error logs, iOS crash) emailing me (2026-11-20)
 - [x] Platform: removed /traffic, the server's traffic collector cron and traffic_minutes (New Relic covers the apps); Ruby 4.0.10 for CVE-2026-132825 (PR #6) (2026-11-20)
 - [x] New Relic logs: real-calc (Rails.logger via OpenTelemetry logs) and ABChealth site (console → OTel) send logs with trace ids; admin emails no longer logged (real-calc #23, abchealth #6) (2026-11-20)
 - [x] ABChealth iOS crash reporting: New Relic Mobile (crashes only, no session replay), dSYM upload on Release builds, Xcode project in git (PR #2) (2026-11-20)
 - [x] ABChealth App Review demo account seeded: goals, updates, saved/liked/read articles (PR #3) (2026-11-20)
-- [x] ABChealth's old Vercel project deleted (old address 404; its stored Neon URL and Google secret gone); Supabase Auth URLs moved to abchealth.lyndbergh.net (2026-11-20)
 
 *Generated from my `/next-level` notes.*
 

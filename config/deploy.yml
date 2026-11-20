@@ -32,7 +32,6 @@ env:
     - GOOGLE_CLIENT_ID      # admin sign-in (redirect URI: https://platform.lyndbergh.net/auth/google_oauth2/callback)
     - GOOGLE_CLIENT_SECRET
     - ADMIN_EMAILS          # who may sign in, comma separated
-    - ALERT_URL
 
 # SQLite databases and their nightly backups (storage/backups) live in this Docker volume.
 volumes:

@@ -8,8 +8,6 @@ class FormsControllerTest < ActionDispatch::IntegrationTest
     Feedback.create!(site: "abchealth", comment: "Love the check-ins")
   end
 
-  teardown { ENV.delete("ADMIN_PASSWORD") }
-
   test "shows contact messages with a reply link, and feedback by site with its average" do
     get forms_path
 
@@ -21,23 +19,10 @@ class FormsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".body", "Great rankings"
   end
 
-  test "asks for the password when one is set" do
-    ENV["ADMIN_PASSWORD"] = "s3cret"
-
-    get forms_path
-    assert_response :unauthorized
-
-    get forms_path, headers: { "Authorization" => ActionController::HttpAuthentication::Basic.encode_credentials("admin", "wrong") }
-    assert_response :unauthorized
-
-    get forms_path, headers: { "Authorization" => ActionController::HttpAuthentication::Basic.encode_credentials("admin", "s3cret") }
-    assert_response :success
-  end
-
-  test "is locked in production when no password is set" do
+  test "is locked in production when Google sign-in isn't set up" do
     Rails.env.define_singleton_method(:local?) { false }
     get forms_path
-    assert_response :forbidden
+    assert_redirected_to sign_in_path
   ensure
     Rails.env.singleton_class.remove_method(:local?)
   end

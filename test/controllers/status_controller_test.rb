@@ -13,11 +13,11 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='https://abchealth.lyndbergh.net/admin/']", "Admin"
   end
 
-  test "is public even when the admin password is set" do
-    ENV["ADMIN_PASSWORD"] = "s3cret"
+  test "is public even when admin sign-in is set up" do
+    ENV.update("GOOGLE_CLIENT_ID" => "id", "GOOGLE_CLIENT_SECRET" => "secret", "ADMIN_EMAILS" => "owner@example.com")
     get root_path
     assert_response :success
   ensure
-    ENV.delete("ADMIN_PASSWORD")
+    %w[GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET ADMIN_EMAILS].each { |key| ENV.delete(key) }
   end
 end

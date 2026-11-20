@@ -1,5 +1,5 @@
 # Kamal deploy to the same Hetzner VPS as real-calc (its own container behind the shared kamal-proxy).
-# Run through bin/prod, which loads .env.production (KAMAL_HOST, KAMAL_REGISTRY_PASSWORD, ADMIN_PASSWORD).
+# Run through bin/prod, which loads .env.production (KAMAL_HOST, KAMAL_REGISTRY_PASSWORD, GOOGLE_CLIENT_ID, ...).
 <% host = ENV.fetch("KAMAL_HOST") { abort "Set KAMAL_HOST to the server's IP" } %>
 service: lyndbergh-platform
 image: lsimelus/lyndbergh-platform
@@ -29,7 +29,9 @@ env:
     SOLID_QUEUE_IN_PUMA: true   # site checks and the nightly backup run inside the web container
   secret:
     - RAILS_MASTER_KEY
-    - ADMIN_PASSWORD
+    - GOOGLE_CLIENT_ID      # admin sign-in (redirect URI: https://platform.lyndbergh.net/auth/google_oauth2/callback)
+    - GOOGLE_CLIENT_SECRET
+    - ADMIN_EMAILS          # who may sign in, comma separated
     - ALERT_URL
     - TRAFFIC_TOKEN    # script/traffic-collector's bearer token for POST /api/traffic
 

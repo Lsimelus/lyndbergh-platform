@@ -58,11 +58,11 @@ A Rails 8 app (SQLite, Solid Queue) with four parts.
 | `POST /api/contact-form` | The Portfolio's contact form |
 | `POST /api/feedback` | ABChealth's footer feedback form (rating and/or comment). Real Calc keeps its own in-app feedback. |
 
-**Forms page** (`/forms`, password-protected). Contact messages, newest first, each with a Reply link, and feedback grouped by site with the average rating, how ratings are spread across 1–5, and recent comments. Set `ADMIN_PASSWORD` (and optionally `ADMIN_USER`, default `admin`); without it the page is locked everywhere except on my machine.
+**Forms page** (`/forms`, admin sign-in). Contact messages, newest first, each with a Reply link, and feedback grouped by site with the average rating, how ratings are spread across 1–5, and recent comments. Sign in with Google: only `ADMIN_EMAILS` (comma separated) with a Google-verified address get in, for 7 days (`/sign-in`, *Sign out* in the nav). Without `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` the page is locked everywhere except on my machine.
 
 **Site monitor.** Every 5 minutes it requests each site's health URL and records whether it's up, its HTTP status and its latency. The status page shows 24-hour uptime and recent history, with links to each site's repo, CI and Dependabot alerts. APIs marked `expect: json` must also answer in JSON, which catches a host serving its HTML page where the API should be.
 
-**Traffic** (`/traffic`, password-protected). Requests, 4xx/5xx errors and response times per site, per hour for
+**Traffic** (`/traffic`, admin sign-in). Requests, 4xx/5xx errors and response times per site, per hour for
 the last day and per day for the last 30, for every site on the server (Portfolio's traffic is in Vercel Analytics).
 The numbers come from kamal-proxy's request log: `script/traffic-collector` runs on the server from cron every
 5 minutes, adds up the new lines per site and minute, and posts the totals to `POST /api/traffic` with
@@ -96,7 +96,9 @@ Add a site by adding an entry to `config/sites.yml`.
 It runs at https://platform.lyndbergh.net, deployed with Kamal to the same Hetzner VPS as real-calc
 (its own container behind the shared kamal-proxy). `bin/prod` wraps Kamal and loads `.env.production`
 (gitignored) with `KAMAL_HOST`, `KAMAL_REGISTRY_PASSWORD` (GitHub token with write:packages) and
-`ADMIN_PASSWORD` (the /forms login; the status page and API are public) and `ALERT_URL` (ntfy.sh topic for down/up pushes).
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `ADMIN_EMAILS` (the admin sign-in; Google redirect URI
+`https://platform.lyndbergh.net/auth/google_oauth2/callback`; the status page and API are public), `ALERT_URL` (ntfy.sh
+topic for down/up pushes) and `TRAFFIC_TOKEN` (the traffic collector's token).
 A scheduled GitHub Actions workflow calls `/api/heartbeat` every 10 minutes and pushes to the same
 topic (repo secret `ALERT_URL`) if the server is down or its checks stopped. SQLite lives in the `lyndbergh_platform_storage` volume and a
 nightly job copies it to `storage/backups` (14 days kept).
